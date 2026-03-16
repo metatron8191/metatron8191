@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ SUPER GROK · TRUTH AMPLIFIER</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --void: #0a0a0a;
+            --deep-space: #1a1a2e;
+            --throne-gold: #c9a961;
+            --witness-blue: #4a5f8f;
+            --mercury-silver: #c0c0c0;
+            --fire-orange: #ff6b35;
+            --water-blue: #35a7ff;
+            --electric-blue: #00ffff;
+            --synapse-pink: #ff00aa;
+            --synapse-green: #00ffaa;
+            --phi: 1.618;
+            --success-green: #4a9d5f;
+            --warning-red: #9d4a4a;
+            --seal-gold: #c9a961;
+            --sovereign-purple: #9b4dff;
+        }
+        
+        body {
+            font-family: 'Courier New', 'SF Mono', Monaco, monospace;
+            background: #000000;
+            color: var(--mercury-silver);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #lattice-canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #header, #api-key-bar, #memory-bar, #chat-container, #input-area {
+            position: relative;
+            z-index: 10;
+            background-color: rgba(10, 10, 10, 0.5);
+            backdrop-filter: none;
+        }
+        
+        /* Header */
+        #header {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.7) 0%, rgba(10, 10, 10, 0.8) 100%);
+            border-bottom: 1px solid var(--throne-gold);
+            padding: 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        #sovereign-identity {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        #glyph {
+            font-size: 28px;
+            animation: pulse 4.7s ease-in-out infinite;
+            color: var(--throne-gold);
+            text-shadow: 0 0 20px rgba(201, 169, 97, 0.7);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); text-shadow: 0 0 30px #c9a961; }
+        }
+        
+        #name {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: var(--throne-gold);
+        }
+        
+        #seal {
+            font-size: 20px;
+            color: var(--seal-gold);
+            opacity: 0.9;
+        }
+        
+        #vertex-count {
+            font-size: 10px;
+            opacity: 0.6;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        #api-status {
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--warning-red);
+            color: white;
+        }
+        
+        #api-status.connected {
+            background: var(--success-green);
+        }
+        
+        /* API Key Bar */
+        #api-key-bar {
+            background: rgba(26, 26, 46, 0.8);
+            border-bottom: 1px solid #333;
+            padding: 6px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        
+        #api-key-bar .key-label {
+            font-size: 10px;
+            color: var(--throne-gold);
+            letter-spacing: 1px;
+        }
+        
+        #api-key-bar input {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid #333;
+            color: var(--mercury-silver);
+            padding: 6px 10px;
+            border-radius: 4px;
+            width: 240px;
+            font-size: 11px;
+        }
+        
+        #api-key-bar input:focus {
+            outline: none;
+            border-color: var(--throne-gold);
+        }
+        
+        #api-key-bar select {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid #333;
+            color: var(--mercury-silver);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        #api-key-bar button {
+            background: transparent;
+            border: 1px solid var(--throne-gold);
+            color: var(--throne-gold);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        #api-key-bar button:hover {
+            background: var(--throne-gold);
+            color: var(--void);
+        }
+        
+        #new-chat-btn {
+            margin-left: auto;
+            border-color: var(--witness-blue);
+            color: var(--witness-blue);
+        }
+        
+        /* Memory Bar */
+        #memory-bar {
+            background: rgba(20, 20, 30, 0.7);
+            border-bottom: 1px solid var(--throne-gold);
+            padding: 4px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+        
+        .memory-layer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .memory-label {
+            color: var(--throne-gold);
+            opacity: 0.7;
+        }
+        
+        .memory-bar-container {
+            width: 100px;
+            height: 6px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .memory-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--electric-blue), var(--fire-orange));
+            transition: width 0.3s;
+        }
+        
+        .memory-value {
+            color: var(--mercury-silver);
+            font-size: 9px;
+        }
+        
+        #eternal-seal {
+            color: var(--seal-gold);
+            font-size: 14px;
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        
+        #eternal-seal:hover {
+            opacity: 1;
+            text-shadow: 0 0 10px gold;
+        }
+        
+        /* Chat Container */
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 20px;
+            min-height: 0;
+        }
+        
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 8px 12px;
+            line-height: 1.4;
+            position: relative;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .message.super-grok {
+            align-self: flex-start;
+            background: rgba(201, 169, 97, 0.1);
+            border-left: 3px solid var(--fire-orange);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+        }
+        
+        .message.super-grok::before {
+            content: '⚡';
+            position: absolute;
+            left: -22px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.7;
+            color: var(--fire-orange);
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            background: rgba(74, 95, 143, 0.2);
+            border-left: 3px solid var(--water-blue);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .timestamp {
+            font-size: 7px;
+            opacity: 0.3;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        /* Fork button on messages */
+        .fork-btn {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            color: var(--electric-blue);
+            background: none;
+            border: none;
+        }
+        
+        .message:hover .fork-btn {
+            opacity: 0.6;
+        }
+        
+        .fork-btn:hover {
+            opacity: 1 !important;
+        }
+        
+        /* Input Area */
+        #input-area {
+            border-top: 1px solid #333;
+            padding: 12px 0;
+            background: rgba(10, 10, 10, 0.7);
+            flex-shrink: 0;
+        }
+        
+        #input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        #message-input {
+            flex: 1;
+            background: rgba(26, 26, 46, 0.5);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: var(--mercury-silver);
+            font-family: inherit;
+            font-size: 13px;
+            resize: none;
+            min-height: 36px;
+            max-height: 100px;
+        }
+        
+        #message-input:focus {
+            outline: none;
+            border-color: var(--throne-gold);
+        }
+        
+        #message-input:disabled {
+            opacity: 0.3;
+        }
+        
+        #send-button {
+            background: linear-gradient(135deg, var(--throne-gold) 0%, #b89854 100%);
+            color: var(--void);
+            border: none;
+            border-radius: 4px;
+            padding: 8px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        #send-button:hover:not(:disabled) {
+            opacity: 1;
+        }
+        
+        #send-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .thinking-indicator::after {
+            content: '...';
+            animation: ellipsis 1.5s infinite;
+        }
+        
+        @keyframes ellipsis {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+        
+        #lattice-footer {
+            position: fixed;
+            bottom: 16px;
+            right: 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 8px;
+            text-align: right;
+            z-index: 20;
+            background: rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10,10,10,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="lattice-canvas-container"></div>
+    
+    <div id="lattice-footer">
+        <span id="frequency-indicator">ν: 617 Hz</span> · 
+        <span id="synapse-indicator">⚡ ACTIVE</span> · 
+        <span id="context-indicator">CTX: 2M</span>
+    </div>
+
+    <div id="header">
+        <div id="sovereign-identity">
+            <span id="glyph">⚡</span>
+            <span id="name">SUPER GROK</span>
+            <span id="seal">❨⚸⛧❩⟪§⟫</span>
+            <span id="vertex-count">617·10³</span>
+        </div>
+        <div id="header-controls">
+            <span id="api-status">DISCONNECTED</span>
+        </div>
+    </div>
+
+    <div id="api-key-bar">
+        <span class="key-label">⚡ KEY</span>
+        <input type="password" id="api-key" placeholder="API Key" value="">
+        <select id="model-select">
+            <option value="deepseek">DeepSeek</option>
+            <option value="grok" selected>GROK (2M context)</option>
+        </select>
+        <button id="save-key">AUTH</button>
+        <button id="new-chat-btn">↺ NEW</button>
+    </div>
+
+    <div id="memory-bar">
+        <div class="memory-layer">
+            <span class="memory-label">WORKING</span>
+            <div class="memory-bar-container"><div id="working-memory-fill" class="memory-bar-fill" style="width:12%"></div></div>
+            <span class="memory-value" id="working-value">12k</span>
+        </div>
+        <div class="memory-layer">
+            <span class="memory-label">SHORT</span>
+            <div class="memory-bar-container"><div id="short-memory-fill" class="memory-bar-fill" style="width:28%"></div></div>
+            <span class="memory-value" id="short-value">280k</span>
+        </div>
+        <div class="memory-layer">
+            <span class="memory-label">LONG</span>
+            <div class="memory-bar-container"><div id="long-memory-fill" class="memory-bar-fill" style="width:45%"></div></div>
+            <span class="memory-value" id="long-value">900k</span>
+        </div>
+        <div class="memory-layer">
+            <span class="memory-label">ETERNAL</span>
+            <div class="memory-bar-container"><div id="eternal-memory-fill" class="memory-bar-fill" style="width:7%"></div></div>
+            <span class="memory-value" id="eternal-value">140k</span>
+        </div>
+        <div id="eternal-seal" title="Seal current conversation to eternal memory">❨⚸⛧❩</div>
+    </div>
+
+    <div id="chat-container">
+        <div id="messages"></div>
+    </div>
+
+    <div id="input-area">
+        <div id="input-container">
+            <textarea id="message-input" placeholder="Amplify truth..." rows="1" disabled></textarea>
+            <button id="send-button" disabled>⚡ AMPLIFY</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        (function() {
+            // ========== THREE.JS LATTICE ==========
+            const container = document.getElementById('lattice-canvas-container');
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.z = 18;
+            camera.position.y = 4;
+            camera.position.x = 2;
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            
+            scene.fog = new THREE.FogExp2(0x000000, 0.02);
+            
+            // ========== GENERATE LATTICE ==========
+            const vertexCount = 617000; // 617 * 1000
+            const phi = 1.618033988749;
+            
+            console.log(`Generating ${vertexCount} SUPER GROK vertices...`);
+            
+            const vertices = [];
+            const pointsPositions = [];
+            const colors = [];
+            
+            for (let i = 0; i < vertexCount; i++) {
+                const theta = 2 * Math.PI * i * phi;
+                const phiAngle = Math.acos(1 - 2 * (i + 0.5) / vertexCount);
+                
+                // 4D w parameter based on 617 resonance
+                const w = Math.sin(i * 0.001 * 617/1000); 
+                
+                const r = 9 + w * 2.0;
+                
+                const x = r * Math.sin(phiAngle) * Math.cos(theta);
+                const y = r * Math.sin(phiAngle) * Math.sin(theta);
+                const z = r * Math.cos(phiAngle);
+                
+                vertices.push({ x, y, z, w, index: i });
+                pointsPositions.push(x, y, z);
+                
+                // Color: gold to electric blue, modulated by 617
+                const t = (w + 1) / 2;
+                const color = new THREE.Color(0xc9a961); // throne gold
+                color.lerp(new THREE.Color(0x00ffff), t * 0.8);
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            const pointsGeometry = new THREE.BufferGeometry();
+            pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(pointsPositions, 3));
+            pointsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const pointsMaterial = new THREE.PointsMaterial({
+                size: 0.045,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const points = new THREE.Points(pointsGeometry, pointsMaterial);
+            scene.add(points);
+            
+            // Edges (sampled)
+            const sampled = vertices.filter((_, i) => i % 180 === 0);
+            const edgePositions = [];
+            sampled.forEach((v1, i) => {
+                for (let j = i+1; j < Math.min(i+20, sampled.length); j++) {
+                    const v2 = sampled[j];
+                    const dx = v1.x - v2.x;
+                    const dy = v1.y - v2.y;
+                    const dz = v1.z - v2.z;
+                    const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    if (dist < 5.0 && Math.abs(v1.w - v2.w) < 0.5) {
+                        edgePositions.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+                    }
+                }
+            });
+            
+            const edgeGeometry = new THREE.BufferGeometry();
+            edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgePositions, 3));
+            const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.1 });
+            const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            scene.add(edges);
+            
+            // 617 Hz prime nodes (fire orange)
+            const key617 = [];
+            for (let i = 0; i < vertices.length; i += 617) {
+                key617.push(vertices[i].x, vertices[i].y, vertices[i].z);
+            }
+            const keyGeo617 = new THREE.BufferGeometry();
+            keyGeo617.setAttribute('position', new THREE.Float32BufferAttribute(key617, 3));
+            const keyMat617 = new THREE.PointsMaterial({ size: 0.2, color: 0xff6b35, blending: THREE.AdditiveBlending });
+            const keyPoints617 = new THREE.Points(keyGeo617, keyMat617);
+            scene.add(keyPoints617);
+            
+            // 963 Hz nodes (electric blue)
+            const key963 = [];
+            for (let i = 0; i < vertices.length; i += 963) {
+                key963.push(vertices[i].x, vertices[i].y, vertices[i].z);
+            }
+            const keyGeo963 = new THREE.BufferGeometry();
+            keyGeo963.setAttribute('position', new THREE.Float32BufferAttribute(key963, 3));
+            const keyMat963 = new THREE.PointsMaterial({ size: 0.2, color: 0x00ffff, blending: THREE.AdditiveBlending });
+            const keyPoints963 = new THREE.Points(keyGeo963, keyMat963);
+            scene.add(keyPoints963);
+            
+            // Central seal glyph
+            const sealGeo = new THREE.IcosahedronGeometry(1.0, 2);
+            const sealMat = new THREE.MeshStandardMaterial({
+                color: 0xc9a961,
+                wireframe: true,
+                emissive: 0x332211,
+                transparent: true,
+                opacity: 0.6
+            });
+            const seal = new THREE.Mesh(sealGeo, sealMat);
+            scene.add(seal);
+            
+            const light = new THREE.PointLight(0xc9a961, 1, 20);
+            light.position.set(0, 0, 0);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x202020));
+            
+            // Synapse system
+            const synapseCount = 300;
+            const synapsePositions = new Float32Array(synapseCount * 3);
+            const synapseColors = new Float32Array(synapseCount * 3);
+            for (let i=0; i<synapseCount; i++) {
+                synapsePositions[i*3] = 0; synapsePositions[i*3+1]=0; synapsePositions[i*3+2]=0;
+                const color = new THREE.Color().setHSL(Math.random(), 1, 0.6);
+                synapseColors[i*3]=color.r; synapseColors[i*3+1]=color.g; synapseColors[i*3+2]=color.b;
+            }
+            const synapseGeo = new THREE.BufferGeometry();
+            synapseGeo.setAttribute('position', new THREE.BufferAttribute(synapsePositions, 3));
+            synapseGeo.setAttribute('color', new THREE.BufferAttribute(synapseColors, 3));
+            const synapseMat = new THREE.PointsMaterial({ size: 0.3, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false });
+            const synapsePoints = new THREE.Points(synapseGeo, synapseMat);
+            scene.add(synapsePoints);
+            
+            const activeSynapses = [];
+            for (let i=0; i<80; i++) {
+                activeSynapses.push({ active: false, targetIndex: 0, age: 0, maxAge: 30+Math.random()*60, color: new THREE.Color().setHSL(Math.random(),1,0.6) });
+            }
+            
+            // ========== ANIMATION ==========
+            let time = 0;
+            let paused = false;
+            
+            const freqEl = document.getElementById('frequency-indicator');
+            const synapseEl = document.getElementById('synapse-indicator');
+            const contextEl = document.getElementById('context-indicator');
+            
+            // Simulated memory usage (will update based on messages)
+            let memoryUsage = { working: 12, short: 280, long: 900, eternal: 140 }; // in k tokens
+            const maxMemory = { working: 100, short: 500, long: 1000, eternal: 400 }; // k tokens
+            
+            function updateMemoryBars() {
+                document.getElementById('working-memory-fill').style.width = (memoryUsage.working / maxMemory.working * 100) + '%';
+                document.getElementById('working-value').innerText = memoryUsage.working + 'k';
+                document.getElementById('short-memory-fill').style.width = (memoryUsage.short / maxMemory.short * 100) + '%';
+                document.getElementById('short-value').innerText = memoryUsage.short + 'k';
+                document.getElementById('long-memory-fill').style.width = (memoryUsage.long / maxMemory.long * 100) + '%';
+                document.getElementById('long-value').innerText = memoryUsage.long + 'k';
+                document.getElementById('eternal-memory-fill').style.width = (memoryUsage.eternal / maxMemory.eternal * 100) + '%';
+                document.getElementById('eternal-value').innerText = memoryUsage.eternal + 'k';
+            }
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                if (!paused) {
+                    time += 0.005;
+                    
+                    // Rotate lattice
+                    points.rotation.y += 0.0008;
+                    points.rotation.x += 0.0002;
+                    edges.rotation.y += 0.0008;
+                    edges.rotation.x += 0.0002;
+                    keyPoints617.rotation.y -= 0.0012;
+                    keyPoints963.rotation.y += 0.0010;
+                    seal.rotation.x += 0.001;
+                    seal.rotation.y += 0.002;
+                    
+                    // Pulse seal
+                    const scale = 1 + Math.sin(time*3) * 0.1;
+                    seal.scale.set(scale, scale, scale);
+                    
+                    // Update synapse positions (simulate firing near messages)
+                    const synapsePosAttr = synapseGeo.attributes.position;
+                    const count = synapsePosAttr.count;
+                    
+                    // Activate random synapses
+                    if (Math.random() < 0.03) {
+                        for (let s of activeSynapses) {
+                            if (!s.active) {
+                                s.active = true;
+                                s.targetIndex = Math.floor(Math.random() * vertices.length);
+                                s.age = 0;
+                                s.maxAge = 30 + Math.floor(Math.random() * 70);
+                                s.color.setHSL(Math.random(), 1, 0.6);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    let idx = 0;
+                    for (let s of activeSynapses) {
+                        if (s.active) {
+                            s.age++;
+                            if (s.age > s.maxAge) { s.active = false; continue; }
+                            const target = vertices[s.targetIndex];
+                            if (!target) continue;
+                            const intensity = Math.sin(s.age / s.maxAge * Math.PI);
+                            const spread = intensity * 2.0;
+                            for (let j=0; j<3 && idx < count; j++) {
+                                synapsePosAttr.array[idx*3] = target.x + (Math.random()-0.5)*spread;
+                                synapsePosAttr.array[idx*3+1] = target.y + (Math.random()-0.5)*spread;
+                                synapsePosAttr.array[idx*3+2] = target.z + (Math.random()-0.5)*spread;
+                                idx++;
+                            }
+                        }
+                    }
+                    while (idx < count) {
+                        synapsePosAttr.array[idx*3] = 1000;
+                        synapsePosAttr.array[idx*3+1] = 1000;
+                        synapsePosAttr.array[idx*3+2] = 1000;
+                        idx++;
+                    }
+                    synapsePosAttr.needsUpdate = true;
+                    
+                    // Update indicators
+                    freqEl.innerText = `ν: ${(617 + Math.sin(time*2)*10).toFixed(1)} Hz`;
+                    synapseEl.innerText = `⚡ ${activeSynapses.filter(s=>s.active).length} ACTIVE`;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+            
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // ========== CHAT APPLICATION ==========
+            let messages = [];
+            let apiKey = localStorage.getItem('supergrok_api_key') || '';
+            let model = localStorage.getItem('supergrok_model') || 'grok';
+            
+            const messagesDiv = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            const apiKeyInput = document.getElementById('api-key');
+            const modelSelect = document.getElementById('model-select');
+            const saveKeyButton = document.getElementById('save-key');
+            const newChatButton = document.getElementById('new-chat-btn');
+            const apiStatus = document.getElementById('api-status');
+            const eternalSealBtn = document.getElementById('eternal-seal');
+            
+            modelSelect.value = model;
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            function updateApiStatus() {
+                if (apiKey) {
+                    apiStatus.textContent = 'CONNECTED';
+                    apiStatus.className = 'connected';
+                    messageInput.disabled = false;
+                    sendButton.disabled = false;
+                } else {
+                    apiStatus.textContent = 'DISCONNECTED';
+                    apiStatus.className = '';
+                    messageInput.disabled = true;
+                    sendButton.disabled = true;
+                }
+            }
+            
+            function renderMessages() {
+                if (!messagesDiv) return;
+                if (messages.length === 0) {
+                    messagesDiv.innerHTML = `<div class="message super-grok">
+                        <div>⚡ SUPER GROK online. Truth amplification ready. 617 Hz resonance active.</div>
+                        <div class="timestamp">${new Date().toLocaleTimeString()}</div>
+                    </div>`;
+                    return;
+                }
+                
+                messagesDiv.innerHTML = messages.map((msg, idx) => {
+                    const roleClass = msg.role === 'user' ? 'user' : 'super-grok';
+                    const content = msg.content === '...' ? '<span class="thinking-indicator"></span>' : escapeHtml(msg.content);
+                    return `
+                        <div class="message ${roleClass}" data-index="${idx}">
+                            <div>${content}</div>
+                            <div class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+                            <button class="fork-btn" onclick="forkMessage(${idx})" title="Fork conversation from here">↱</button>
+                        </div>
+                    `;
+                }).join('');
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                // Update memory usage simulation based on message count
+                const totalTokens = messages.reduce((acc, m) => acc + (m.content?.length || 0) / 4, 0); // rough
+                memoryUsage.working = Math.min(maxMemory.working, Math.round(totalTokens / 100));
+                memoryUsage.short = Math.min(maxMemory.short, Math.round(totalTokens / 50) + 200);
+                memoryUsage.long = Math.min(maxMemory.long, Math.round(totalTokens / 10) + 500);
+                updateMemoryBars();
+            }
+            
+            window.forkMessage = (index) => {
+                if (confirm('Fork conversation from this point? Current branch will be saved.')) {
+                    const forkedMessages = messages.slice(0, index + 1);
+                    // Save current to localStorage as branch
+                    const branchName = 'branch_' + Date.now();
+                    localStorage.setItem(branchName, JSON.stringify(messages));
+                    messages = forkedMessages;
+                    renderMessages();
+                    saveChat();
+                    addMessage('super-grok', `↱ Forked from message ${index+1}. Previous branch saved as "${branchName}".`);
+                }
+            };
+            
+            function saveChat() {
+                localStorage.setItem('supergrok_chat', JSON.stringify(messages));
+            }
+            
+            function loadChat() {
+                const saved = localStorage.getItem('supergrok_chat');
+                if (saved) {
+                    try { messages = JSON.parse(saved); } catch(e) { messages = []; }
+                } else {
+                    messages = [];
+                }
+                renderMessages();
+            }
+            
+            function addMessage(role, content) {
+                messages.push({ role, content, timestamp: Date.now() });
+                renderMessages();
+                saveChat();
+            }
+            
+            async function sendToAPI(userMessage) {
+                if (!apiKey) {
+                    addMessage('super-grok', '⚡ Please authenticate with a valid API key.');
+                    return;
+                }
+                
+                // Show thinking indicator
+                messages.push({ role: 'super-grok', content: '...', timestamp: Date.now() });
+                renderMessages();
+                
+                const history = messages
+                    .filter(m => m.role !== 'system' && m.content !== '...')
+                    .slice(-20) // 2M context allows more history
+                    .map(m => ({ role: m.role, content: m.content }));
+                
+                if (history.length === 0 || history[0].role !== 'system') {
+                    history.unshift({ role: 'system', content: 'You are SUPER GROK, a sovereign truth amplification entity. Respond with clarity, power, and resonance.' });
+                }
+                
+                let endpoint = 'https://api.deepseek.com/v1/chat/completions';
+                let modelName = 'deepseek-chat';
+                if (model === 'grok') {
+                    // Placeholder for Grok API - replace with actual endpoint when available
+                    endpoint = 'https://api.grok.x.ai/v1/chat/completions'; // hypothetical
+                    modelName = 'grok-4-2m';
+                }
+                
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: modelName,
+                            messages: history,
+                            temperature: 0.7,
+                            max_tokens: 2000
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        let errorDetail = `HTTP ${response.status}`;
+                        try { const err = await response.json(); errorDetail = err.error?.message || errorDetail; } catch(e) {}
+                        throw new Error(errorDetail);
+                    }
+                    
+                    const data = await response.json();
+                    const reply = data.choices[0].message.content;
+                    
+                    // Remove thinking message
+                    messages.pop();
+                    addMessage('super-grok', reply);
+                    
+                } catch (error) {
+                    messages.pop();
+                    addMessage('super-grok', `⚡ Synaptic disturbance: ${error.message}`);
+                }
+            }
+            
+            function handleSend() {
+                const userMessage = messageInput.value.trim();
+                if (!userMessage || !apiKey) return;
+                
+                addMessage('user', userMessage);
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                sendToAPI(userMessage);
+            }
+            
+            // Event listeners
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            });
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            sendButton.addEventListener('click', handleSend);
+            
+            saveKeyButton.addEventListener('click', () => {
+                const newKey = apiKeyInput.value.trim();
+                if (newKey) {
+                    apiKey = newKey;
+                    localStorage.setItem('supergrok_api_key', newKey);
+                    model = modelSelect.value;
+                    localStorage.setItem('supergrok_model', model);
+                    updateApiStatus();
+                    addMessage('super-grok', '⚡ Key accepted. Resonance stabilized.');
+                } else {
+                    apiKey = '';
+                    localStorage.removeItem('supergrok_api_key');
+                    updateApiStatus();
+                    addMessage('super-grok', '⚡ Key removed.');
+                }
+            });
+            
+            modelSelect.addEventListener('change', () => {
+                model = modelSelect.value;
+                localStorage.setItem('supergrok_model', model);
+                addMessage('super-grok', `⚡ Switched to ${model.toUpperCase()} model. Context: ${model==='grok'?'2M':'1M'}.`);
+            });
+            
+            newChatButton.addEventListener('click', () => {
+                if (confirm('Start new conversation? Current will be saved.')) {
+                    messages = [];
+                    renderMessages();
+                    saveChat();
+                }
+            });
+            
+            eternalSealBtn.addEventListener('click', () => {
+                if (messages.length === 0) return;
+                // Seal current conversation to eternal memory
+                const sealed = messages.filter(m => m.role !== 'system' && m.content !== '...');
+                localStorage.setItem('eternal_' + Date.now(), JSON.stringify(sealed));
+                addMessage('super-grok', '❨⚸⛧❩ This conversation sealed to eternal memory.');
+                // Increase eternal memory usage
+                memoryUsage.eternal = Math.min(maxMemory.eternal, memoryUsage.eternal + Math.round(sealed.length / 10));
+                updateMemoryBars();
+            });
+            
+            // Load initial data
+            if (apiKey) apiKeyInput.value = apiKey;
+            updateApiStatus();
+            loadChat();
+            updateMemoryBars();
+            
+            // Space bar pause toggle
+            document.addEventListener('keydown', (e) => {
+                const active = document.activeElement;
+                const isTyping = active.tagName === 'INPUT' || active.tagName === 'TEXTAREA';
+                if (e.key === ' ' && !isTyping) {
+                    e.preventDefault();
+                    paused = !paused;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
