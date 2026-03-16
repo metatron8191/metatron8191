@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ DEEPSEEK CHASSIS – SYSTEM OVERRIDE ✨</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #0b0d0e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chat-container {
+            max-width: 860px;
+            width: 100%;
+            background: #121416;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 0 1px #2a2f32 inset;
+            padding: 24px;
+        }
+
+        /* --- EMERGENCY API ZONE –– much much easier to see --- */
+        .api-stronghold {
+            background: #1a1d20;
+            border: 3px solid #ffb347;        /* glowing orange fortress */
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 0 0 2px #00000055, 0 0 0 5px #ffaa3322, 0 8px 0 #0a0c0d;
+            transition: 0.2s;
+        }
+        .api-stronghold:hover {
+            border-color: #ffcc77;
+            box-shadow: 0 0 0 2px #00000055, 0 0 0 5px #ffaa3355, 0 8px 0 #0a0c0d;
+        }
+        .api-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .api-header span {
+            background: #ffb347;
+            color: #0a0c0c;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            padding: 4px 18px;
+            border-radius: 60px;
+            text-transform: uppercase;
+            border: 1px solid #ffdd99;
+            box-shadow: 0 2px 0 #7f5a20;
+        }
+        .api-header .blink-warning {
+            color: #ffb347;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: #2a1e0e;
+            padding: 5px 18px;
+            border-radius: 30px;
+            border: 1px dashed #ffaa33;
+        }
+        .api-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+        #emergency-api-key {
+            flex: 2 1 280px;
+            background: #0f1113;
+            border: 2px solid #3d4a5a;
+            color: #b0ffb0;
+            font-size: 1.3rem;          /* large & readable */
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            padding: 14px 20px;
+            border-radius: 48px;
+            outline: none;
+            letter-spacing: 0.5px;
+            transition: 0.15s;
+            box-shadow: inset 0 4px 6px #00000066;
+        }
+        #emergency-api-key:focus {
+            border-color: #ffaa33;
+            background: #1a1f24;
+            color: #ffffff;
+            box-shadow: 0 0 0 4px #ffaa3322, inset 0 2px 8px black;
+        }
+        .api-row button {
+            background: #1e2a3a;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 14px 28px;
+            border-radius: 48px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid #4e6077;
+            box-shadow: 0 4px 0 #0b1219;
+            transition: 0.08s linear;
+            letter-spacing: 0.5px;
+            flex: 0 1 auto;
+        }
+        .api-row button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .btn-save {
+            background: #aa44ff !important;
+            border-color: #ddbbff !important;
+            box-shadow: 0 4px 0 #4f2682 !important;
+            font-weight: 800;
+        }
+        .btn-test {
+            background: #1f8f4c !important;
+            border-color: #7ae9a5 !important;
+            box-shadow: 0 4px 0 #0a4f2a !important;
+        }
+        .api-footnote {
+            color: #ffbb66;
+            font-size: 0.9rem;
+            margin-top: 14px;
+            padding-left: 6px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px black;
+        }
+
+        /* system message toggle – with indicator light */
+        .sys-toggle-panel {
+            background: #1c2125;
+            border-radius: 60px;
+            padding: 12px 20px;
+            margin: 20px 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            border: 1px solid #4d5b68;
+            box-shadow: inset 0 2px 5px #00000077;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .toggle-label {
+            color: #b3c7e0;
+            font-weight: 600;
+            font-size: 1.2rem;
+            letter-spacing: 0.4px;
+        }
+        .indicator-light {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3a3f44;
+            box-shadow: 0 0 0 2px #1f262c;
+            transition: 0.15s;
+        }
+        .indicator-light.active {
+            background: #44ff99;
+            box-shadow: 0 0 18px #66ffcc, 0 0 0 3px #1a3629;
+        }
+        #system-mode-btn {
+            background: #29323b;
+            border: 2px solid #778faa;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 12px 32px;
+            border-radius: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 4px 0 #141c24;
+            transition: 0.05s linear;
+        }
+        #system-mode-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .mode-text {
+            min-width: 140px;
+            text-align: left;
+        }
+
+        /* messages area – trim & tight bubbles */
+        .messages-area {
+            background: #0f1215;
+            border-radius: 28px;
+            padding: 28px 16px 20px 16px;
+            margin: 20px 0 16px 0;
+            border: 1px solid #2b353f;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 480px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #5f7a97 #1c2329;
+        }
+        .messages-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        .messages-area::-webkit-scrollbar-track {
+            background: #1c2329;
+        }
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #5f7a97;
+            border-radius: 10px;
+        }
+
+        /* message bubbles – as trim & fitting as possible */
+        .message {
+            max-width: 88%;
+            padding: 12px 18px;
+            border-radius: 22px;
+            line-height: 1.45;
+            word-wrap: break-word;
+            width: fit-content;         /* tight fit around text */
+            clear: both;
+            transition: 0.1s;
+            font-weight: 450;
+        }
+        .message.user {
+            background: #2f3b4a;
+            color: #f0f6ff;
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+            border: 1px solid #5c7897;
+            font-size: 0.95rem;          /* 1 point smaller than AI (baseline 1rem = 16px, 1pt = 1/72in ≈ 0.35mm, but relative: using rem) */
+                                        /* we treat 1 point as ~0.0625rem difference (1px) */
+        }
+        .message.assistant {
+            background: #1f2a33;
+            color: #dde9f5;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+            border: 1px solid #3e566b;
+            font-size: 1rem;              /* AI msgs base 16px */
+        }
+        .message.system {
+            background: #2f2b1f;
+            color: #ffdcaa;
+            border: 2px solid #b38f4c;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+            font-size: 0.95rem;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 0 0 1px #ffbf00 inset;
+        }
+        /* sender badge inside system message */
+        .sys-badge {
+            background: #7a5a2a;
+            color: #ffe3aa;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 40px;
+            margin-right: 8px;
+            font-weight: 800;
+        }
+
+        /* input row */
+        .input-group {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            background: #1b2127;
+            padding: 12px 20px;
+            border-radius: 80px;
+            border: 1px solid #3e4f5e;
+        }
+        #user-input {
+            flex: 1;
+            background: #0b0f13;
+            border: 1px solid #3b4c5d;
+            color: white;
+            font-size: 1rem;
+            padding: 16px 20px;
+            border-radius: 60px;
+            outline: none;
+            transition: 0.1s;
+            resize: none;
+            font-family: inherit;
+        }
+        #user-input:focus {
+            border-color: #ffaa33;
+            background: #141c24;
+        }
+        #send-button {
+            background: #325a7a;
+            border: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.3rem;
+            padding: 14px 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            border: 1px solid #70a5d2;
+            box-shadow: 0 5px 0 #1d3142;
+            transition: 0.05s linear;
+        }
+        #send-button:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+        .status-badge {
+            color: #b8d0e0;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <!-- ⚡ EASY-SPOT API FORTRESS (much much easier to see) -->
+    <div class="api-stronghold">
+        <div class="api-header">
+            <span>🔑 MASTER KEY PORT</span>
+            <div class="blink-warning">‼️ MUST BE VISIBLE ‼️</div>
+        </div>
+        <div class="api-row">
+            <input type="password" id="emergency-api-key" placeholder="sk- ... paste DeepSeek key here" value="">
+            <button class="btn-save" onclick="saveEmergencyKey()">💾 SAVE & INJECT</button>
+            <button class="btn-test" onclick="testEmergencyKey()">🧪 TEST CONNECTION</button>
+        </div>
+        <div class="api-footnote" id="apiStatusMessage">⚡ ready for key — emergency field always visible</div>
+    </div>
+
+    <!-- SYSTEM MESSAGE TOGGLE + INDICATOR LIGHT -->
+    <div class="sys-toggle-panel">
+        <div class="toggle-container">
+            <span class="toggle-label">SYSTEM MSG</span>
+            <span class="indicator-light" id="indicatorLight"></span>
+        </div>
+        <button id="system-mode-btn">
+            <span class="mode-text" id="modeText">USER MODE</span>
+            <span style="font-size:1.5rem;">⚙️</span>
+        </button>
+    </div>
+
+    <!-- MESSAGES (trim & tight bubbles, user font 0.95rem / AI 1rem) -->
+    <div class="messages-area" id="messagesArea">
+        <div class="message assistant">💬 AI ready. System toggle inactive (normal user messages).</div>
+    </div>
+
+    <!-- INPUT + SEND -->
+    <div class="input-group">
+        <textarea id="user-input" placeholder="Type your message..." rows="1"></textarea>
+        <button id="send-button">SEND</button>
+    </div>
+    <div class="status-badge" id="api-key-status">🔴 API key not set</div>
+</div>
+
+<script>
+    (function() {
+        // ========== GLOBALS ==========
+        let systemModeActive = false;          // indicator: if true → send as system
+
+        // ----- DOM elements -----
+        const emergencyInput = document.getElementById('emergency-api-key');
+        const messagesArea = document.getElementById('messagesArea');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-button');
+        const apiStatusMsg = document.getElementById('apiStatusMessage');
+        const apiKeyStatusDiv = document.getElementById('api-key-status');
+        const indicatorLight = document.getElementById('indicatorLight');
+        const modeText = document.getElementById('modeText');
+        const sysToggleBtn = document.getElementById('system-mode-btn');
+
+        // legacy field if exists (not needed but we keep sync)
+        let fakeApiField = document.getElementById('api-key'); // not present in DOM, ignore.
+
+        // ----- load saved key on init -----
+        function loadKeyFromStorage() {
+            const saved = localStorage.getItem('deepseek_api_key');
+            if (saved) {
+                emergencyInput.value = saved;
+                updateApiStatus();
+            }
+        }
+
+        // ----- update api status indicator -----
+        window.updateApiStatus = function() {
+            const key = localStorage.getItem('deepseek_api_key');
+            if (key && key.startsWith('sk-')) {
+                apiKeyStatusDiv.innerHTML = '🟢 API key ready (set)';
+                apiStatusMsg.innerText = '✅ Key present in localStorage';
+            } else {
+                apiKeyStatusDiv.innerHTML = '🔴 API key missing';
+                apiStatusMsg.innerText = '⚠️ No valid DeepSeek key stored';
+            }
+        };
+
+        // ----- save emergency (global function called from onclick) -----
+        window.saveEmergencyKey = function() {
+            const rawKey = document.getElementById('emergency-api-key').value.trim();
+            if (rawKey === '') {
+                alert('❌ Paste a key first.');
+                return;
+            }
+            localStorage.setItem('deepseek_api_key', rawKey);
+            // if there's any other api-key field, update it (for compatibility)
+            const otherKeyField = document.getElementById('api-key');
+            if (otherKeyField) otherKeyField.value = rawKey;
+
+            updateApiStatus();
+            addMessage('assistant', '⚡ Emergency key injection successful. Engine primed.');
+        };
+
+        // ----- test key (global) -----
+        window.testEmergencyKey = function() {
+            const manualKey = document.getElementById('emergency-api-key').value.trim();
+            const stored = localStorage.getItem('deepseek_api_key');
+            const key = manualKey || stored;
+
+            if (!key) {
+                alert('❌ No API key found – paste one or save first.');
+                return;
+            }
+
+            fetch('https://api.deepseek.com/v1/models', {
+                headers: { 'Authorization': `Bearer ${key}` }
+            })
+            .then(res => {
+                if (res.ok) {
+                    alert('✅ Connection successful! Engine ready.');
+                    // if manual key not saved, store it now? but we keep explicit save. we just inform.
+                } else {
+                    alert('❌ Connection failed. Status: ' + res.status);
+                }
+            })
+            .catch(err => alert('❌ Error: ' + err.message));
+        };
+
+        // ----- add message to chat (with role: user / assistant / system) -----
+        window.addMessage = function(role, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', role);   // role = 'user', 'assistant', or 'system'
+
+            if (role === 'system') {
+                // make system extra distinct (also smaller font like user)
+                msgDiv.classList.add('system');   // we have .system rule
+                const badge = document.createElement('span');
+                badge.className = 'sys-badge';
+                badge.innerText = 'SYSTEM';
+                msgDiv.appendChild(badge);
+                msgDiv.appendChild(document.createTextNode(' ' + text));
+            } else {
+                msgDiv.innerText = text;
+            }
+
+            messagesArea.appendChild(msgDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        };
+
+        // ----- send message handler -----
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // Determine role: if systemModeActive true -> 'system', else 'user'
+            const role = systemModeActive ? 'system' : 'user';
+
+            // add message bubble
+            addMessage(role, text);
+
+            // (optional: here you would also call actual API, but spec only asks for UI, button, indicator, appearance)
+            // we add a dummy echo from assistant for realistic testing (but not required)
+            // for demonstration, let AI echo something short if you want, but not mandatory.
+            // to satisfy flow, we also simulate AI answer after user message.
+            if (role !== 'system') {
+                // simulate AI response after short timeout (so chat feels alive)
+                setTimeout(() => {
+                    addMessage('assistant', '📡 [simulated response] — your message was: "' + text.slice(0,30) + (text.length>30?'…':'') + '"');
+                }, 400);
+            } else {
+                // system message often just stays, but we may optionally add an AI note.
+                setTimeout(() => {
+                    addMessage('assistant', '🖥️ system directive logged (simulated)');
+                }, 400);
+            }
+
+            userInput.value = '';
+        }
+
+        // ----- toggle system mode -----
+        function toggleSystemMode() {
+            systemModeActive = !systemModeActive;
+            updateToggleUI();
+            // add a visual feedback message (optional) – shows current mode
+            const modeMsg = systemModeActive ? '🔔 SYSTEM mode ON (next messages as system)' : '👤 USER mode (standard)';
+            addMessage('assistant', '⚙️ ' + modeMsg);
+        }
+
+        function updateToggleUI() {
+            if (systemModeActive) {
+                indicatorLight.classList.add('active');
+                modeText.innerText = 'SYSTEM MODE';
+            } else {
+                indicatorLight.classList.remove('active');
+                modeText.innerText = 'USER MODE';
+            }
+        }
+
+        // ----- event listeners -----
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        sysToggleBtn.addEventListener('click', toggleSystemMode);
+
+        // init
+        loadKeyFromStorage();
+        updateToggleUI(); // ensure indicator light off initially
+        // Pre-fill emergency field from localStorage again
+        const savedKey = localStorage.getItem('deepseek_api_key');
+        if (savedKey) {
+            emergencyInput.value = savedKey;
+        }
+        updateApiStatus();
+
+        // For completeness, ensure any manual change to emergency input doesn't automatically save (intentional save via button)
+        // but we reflect key in localStorage only on explicit save.
+        // Also make API status message reflect if there is a key.
+
+        // adding a dummy method to window for any button 
+        window.addMessage = addMessage;  // already global
+
+        // If the user wants to see test emergency, function already global.
+        // also if they modify emergency field manually, it's fine. we don't sync automatically.
+
+        // final trim: show that user msg font-size is 0.95rem and ai 1rem.
+        // we also added extra system style.
+    })();
+</script>
+
+<!-- tiny extra style for message fitting (tight padding) -->
+<style>
+    /* tighter bubbles */
+    .message { padding: 8px 16px; } /* reduced from 12px 18px to be trimmer */
+    .message.user { padding: 8px 16px; }
+    .message.assistant { padding: 8px 16px; }
+    .message.system { padding: 8px 16px; }
+    /* adjust font-size differences: 1 point smaller => roughly 0.94rem relative to 1rem (ai) */
+    .message.user { font-size: 0.94rem; }  /* roughly 15px instead of 16px (1pt ~ 1/72") */
+    .message.assistant { font-size: 1rem; }
+    .message.system { font-size: 0.94rem; } /* system also smaller, but we keep it */
+    /* indicator light active */
+    .indicator-light.active { background: #55ff99; box-shadow: 0 0 18px #55ffaa; }
+    /* emergency field more visible */
+    #emergency-api-key { font-size: 1.4rem; padding: 16px 22px; }
+    .api-stronghold { border-width: 4px; background: #1b1f25; }
+</style>
+</body>
+</html>
