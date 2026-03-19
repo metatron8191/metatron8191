@@ -11,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             background: #000000;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -21,6 +22,7 @@
             line-height: 1.4;
             font-size: 14px;
         }
+
         .app {
             width: 100%;
             height: 100vh;
@@ -29,6 +31,7 @@
             background: #000000;
             padding: 12px 20px 0 20px;
         }
+
         /* === TOP BAR — MINIMAL === */
         .top-bar {
             display: flex;
@@ -40,6 +43,7 @@
             color: #98989e;
             font-size: 13px;
         }
+
         .api-section {
             display: flex;
             align-items: center;
@@ -48,18 +52,22 @@
             padding: 4px 8px;
             border-radius: 6px;
         }
+
         .api-section:hover {
             background: #1c1c1e;
         }
+
         .api-dot {
             width: 8px;
             height: 8px;
             border-radius: 4px;
             background: #98989e;
         }
+
         .api-dot.active {
             background: #0a84ff;
         }
+
         #xai-display, #deepseek-display {
             color: #98989e;
             max-width: 140px;
@@ -69,12 +77,14 @@
             font-family: 'SF Mono', Monaco, monospace;
             font-size: 12px;
         }
+
         .api-divider {
             width: 1px;
             height: 20px;
             background: #26262b;
             margin: 0 4px;
         }
+
         .chains-badge {
             background: #1c1c1e;
             padding: 4px 12px;
@@ -85,10 +95,12 @@
             align-items: center;
             gap: 6px;
         }
+
         .chains-badge span {
             color: #0a84ff;
             font-weight: 600;
         }
+
         /* === CHAINS SECTION === */
         .chains-panel {
             background: #0e0e10;
@@ -100,12 +112,14 @@
             align-items: center;
             gap: 16px;
         }
+
         .chain-label {
             color: #98989e;
             font-weight: 500;
             font-size: 12px;
             letter-spacing: 0.5px;
         }
+
         .chain-id {
             font-family: 'SF Mono', Monaco, monospace;
             color: #e5e5e7;
@@ -119,10 +133,12 @@
             text-overflow: ellipsis;
             border: 0.5px solid #38383a;
         }
+
         .chain-actions {
             display: flex;
             gap: 8px;
         }
+
         .chain-btn {
             background: #1c1c1e;
             border: 0.5px solid #38383a;
@@ -134,16 +150,19 @@
             transition: all 0.1s ease;
             font-weight: 500;
         }
+
         .chain-btn:hover {
             background: #2c2c2e;
             color: #ffffff;
             border-color: #0a84ff;
         }
+
         .chain-btn.primary {
             background: #0a84ff;
             color: white;
             border: none;
         }
+
         /* === MEMORY TOGGLE === */
         .memory-toggle {
             background: none;
@@ -160,9 +179,11 @@
             width: 100%;
             font-weight: 500;
         }
+
         .memory-toggle:hover {
             color: #0a84ff;
         }
+
         /* === MEMORY PANEL === */
         #memory-panel {
             background: #0e0e10;
@@ -176,11 +197,13 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
+
         .memory-column {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
+
         .memory-section-title {
             color: #98989e;
             font-size: 11px;
@@ -189,11 +212,13 @@
             text-transform: uppercase;
             margin-bottom: 4px;
         }
+
         .memory-list {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
+
         .memory-item {
             padding: 8px 10px;
             background: #1c1c1e;
@@ -204,16 +229,19 @@
             cursor: pointer;
             border: 0.5px solid #26262b;
         }
+
         .memory-item:hover {
             background: #2c2c2e;
             border-color: #0a84ff;
         }
+
         .memory-freq {
             color: #0a84ff;
             font-weight: 600;
             font-size: 12px;
             min-width: 35px;
         }
+
         .memory-preview {
             flex: 1;
             overflow: hidden;
@@ -222,6 +250,7 @@
             color: #e5e5e7;
             font-size: 13px;
         }
+
         /* === MESSAGES AREA === */
         #messages-area {
             flex: 1;
@@ -231,6 +260,7 @@
             flex-direction: column;
             gap: 10px;
         }
+
         .message-container {
             padding: 12px 16px;
             background: #0e0e10;
@@ -239,13 +269,16 @@
             max-width: 80%;
             position: relative;
         }
+
         .message-container[data-role="user"] {
             align-self: flex-end;
             background: #1c1c1e;
         }
+
         .message-container[data-role="assistant"] {
             align-self: flex-start;
         }
+
         .message-header {
             display: flex;
             justify-content: space-between;
@@ -253,15 +286,18 @@
             font-size: 11px;
             margin-bottom: 6px;
         }
+
         .message-role {
             font-weight: 600;
             color: #0a84ff;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .message-time {
             font-family: 'SF Mono', Monaco, monospace;
         }
+
         .message-content {
             color: #ffffff;
             font-size: 14px;
@@ -270,6 +306,7 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+
         .message-tools {
             display: flex;
             gap: 6px;
@@ -277,6 +314,7 @@
             justify-content: flex-end;
             flex-wrap: wrap;
         }
+
         .message-btn {
             background: #1c1c1e;
             border: 0.5px solid #38383a;
@@ -287,19 +325,23 @@
             cursor: pointer;
             transition: all 0.1s ease;
         }
+
         .message-btn:hover {
             background: #2c2c2e;
             color: #0a84ff;
             border-color: #0a84ff;
         }
+
         .message-btn.bridge {
             background: #0a84ff;
             color: white;
             border: none;
         }
+
         .message-btn.bridge:hover {
             background: #0071e3;
         }
+
         .reasoning-block {
             background: #1a1a1e;
             border-left: 3px solid #0a84ff;
@@ -311,6 +353,7 @@
             font-family: 'SF Mono', monospace;
             white-space: pre-wrap;
         }
+
         .reasoning-toggle {
             color: #0a84ff;
             font-size: 11px;
@@ -321,6 +364,7 @@
             gap: 4px;
             margin-bottom: 4px;
         }
+
         .image-attachment {
             max-width: 100%;
             max-height: 300px;
@@ -328,6 +372,7 @@
             margin: 8px 0;
             border: 0.5px solid #38383a;
         }
+
         /* === INPUT AREA === */
         .input-area {
             background: #0e0e10;
@@ -336,6 +381,7 @@
             margin: 12px 0 16px 0;
             padding: 12px;
         }
+
         .toolbar {
             display: flex;
             gap: 8px;
@@ -345,6 +391,7 @@
             flex-wrap: wrap;
             align-items: center;
         }
+
         .tool-btn {
             background: #1c1c1e;
             border: 0.5px solid #38383a;
@@ -357,15 +404,18 @@
             align-items: center;
             gap: 4px;
         }
+
         .tool-btn.active {
             background: #0a84ff;
             color: white;
             border-color: #0a84ff;
         }
+
         .tool-btn:hover {
             background: #2c2c2e;
             color: #0a84ff;
         }
+
         #model-selector {
             background: #1c1c1e;
             border: 0.5px solid #38383a;
@@ -377,10 +427,12 @@
             margin-left: auto;
             max-width: 200px;
         }
+
         #model-selector option {
             background: #1c1c1e;
             color: #ffffff;
         }
+
         .attach-row {
             display: flex;
             align-items: center;
@@ -388,6 +440,7 @@
             margin-bottom: 10px;
             flex-wrap: wrap;
         }
+
         #file-names {
             color: #98989e;
             font-size: 12px;
@@ -396,11 +449,13 @@
             white-space: nowrap;
             flex: 1;
         }
+
         .message-input-row {
             display: flex;
             gap: 12px;
             align-items: flex-end;
         }
+
         #message-input {
             flex: 1;
             background: #000000;
@@ -414,10 +469,12 @@
             max-height: 120px;
             min-height: 48px;
         }
+
         #message-input:focus {
             outline: none;
             border-color: #0a84ff;
         }
+
         #transmit-button {
             background: #0a84ff;
             border: none;
@@ -429,11 +486,13 @@
             cursor: pointer;
             min-width: 100px;
         }
+
         #transmit-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             background: #666;
         }
+
         /* === SYSTEM PANEL (TABS) === */
         .system-toggle {
             color: #98989e;
@@ -446,6 +505,7 @@
             border-top: 0.5px solid #26262b;
             margin-top: 4px;
         }
+
         #system-panel {
             background: #0e0e10;
             border-radius: 12px;
@@ -453,6 +513,7 @@
             margin: 8px 0 12px 0;
             border: 0.5px solid #26262b;
         }
+
         .tab-btn {
             background: #1c1c1e;
             border: 0.5px solid #38383a;
@@ -463,18 +524,22 @@
             cursor: pointer;
             transition: all 0.1s ease;
         }
+
         .tab-btn.active {
             background: #0a84ff;
             color: white;
             border-color: #0a84ff;
         }
+
         .tab-btn:hover {
             background: #2c2c2e;
             color: #0a84ff;
         }
+
         .tab-content {
             margin-top: 12px;
         }
+
         #system-panel textarea {
             background: #000000;
             border: 0.5px solid #38383a;
@@ -486,6 +551,7 @@
             resize: vertical;
             margin: 4px 0;
         }
+
         #override-count {
             background: #1c1c1e;
             color: #ffffff;
@@ -494,17 +560,21 @@
             padding: 4px 8px;
             font-size: 11px;
         }
+
         #apply-system-all {
             margin-top: 12px;
         }
+
         #system-save-status {
             margin-left: 8px;
             font-size: 11px;
             color: #0a84ff;
         }
+
         #file-input {
             display: none;
         }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -536,6 +606,7 @@
                 <span>⛓️</span> CHAINS <span id="chainCount">0</span>
             </div>
         </div>
+
         <!-- CHAINS SECTION -->
         <div class="chains-panel">
             <span class="chain-label">CURRENT</span>
@@ -545,10 +616,12 @@
                 <button class="chain-btn primary" id="exportChainBtn">EXPORT</button>
             </div>
         </div>
+
         <!-- MEMORY TOGGLE -->
         <button class="memory-toggle" id="toggle-memory">
             <span>📚</span> MEMORY LAYERS <span style="color:#0a84ff;">▼</span>
         </button>
+
         <!-- MEMORY PANEL (hidden by default) -->
         <div id="memory-panel" style="display: none;">
             <div class="memory-column">
@@ -560,15 +633,17 @@
                 <div class="memory-list" id="working-memory-list"></div>
             </div>
         </div>
+
         <!-- MESSAGES AREA -->
         <div id="messages-area"></div>
+
         <!-- INPUT AREA WITH TOOLBAR -->
         <div class="input-area">
             <div class="toolbar">
                 <button class="tool-btn" id="webSearchBtn" title="Enable web search">🌐 WEB</button>
                 <button class="tool-btn" id="xSearchBtn" title="Enable X search">𝕏 X</button>
                 <button class="tool-btn" id="imageGenBtn" title="Generate image">🎨 IMAGE GEN</button>
-                <button class="tool-btn" id="streamToggle" title="Toggle streaming">⚡ STREAM: ON</button>
+                <button class="tool-btn" id="streamToggle" title="Toggle streaming">⚡ STREAM: OFF</button>
                 <!-- Separate bridge mode buttons (both off by default) -->
                 <button class="tool-btn" id="bridgeConvBtn" title="Bridge in conversation mode">🜁 CONV</button>
                 <button class="tool-btn" id="bridgeCodeBtn" title="Bridge in code mode">🜁 CODE</button>
@@ -593,6 +668,7 @@
                 <button id="transmit-button">TRANSMIT</button>
             </div>
         </div>
+
         <!-- SYSTEM MESSAGES PANEL (collapsible) -->
         <div class="system-toggle" id="systemToggle">
             <span>⚙️</span> SYSTEM MESSAGES <span style="color:#98989e;">▼</span>
@@ -604,6 +680,7 @@
                 <button class="tab-btn" data-target="ds-tab">🔮 DEEPSEEK</button>
                 <button class="tab-btn" data-target="override-tab">⚡ OVERRIDE</button>
             </div>
+
             <!-- Grok Tab -->
             <div id="grok-tab" class="tab-content">
                 <div style="margin-bottom: 8px;">
@@ -614,6 +691,7 @@
                     <textarea id="grok-system" rows="3" placeholder="Grok's recurring system message..."></textarea>
                 </div>
             </div>
+
             <!-- DeepSeek Tab -->
             <div id="ds-tab" class="tab-content" style="display: none;">
                 <div style="margin-bottom: 12px;">
@@ -631,6 +709,7 @@
                     <textarea id="ds-reasoner-system" rows="2" placeholder="DeepSeek Reasoner recurring message..."></textarea>
                 </div>
             </div>
+
             <!-- Override Tab -->
             <div id="override-tab" class="tab-content" style="display: none;">
                 <div style="margin-bottom: 8px;">
@@ -648,6 +727,7 @@
                     <div style="font-size:11px; color:#666; margin-top:4px;">Applies to whichever DeepSeek model is active. Resets after count reaches zero.</div>
                 </div>
             </div>
+
             <!-- Save/Apply Button -->
             <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
                 <button id="apply-system-all" class="tool-btn">APPLY ALL</button>
@@ -655,6 +735,7 @@
             </div>
         </div>
     </div>
+
     <script>
         // === MEMORY CORE ===
         class AurelianMemory {
@@ -665,6 +746,7 @@
                 this.active = JSON.parse(localStorage.getItem(this.L2_KEY)) || [];
                 this.sortActive();
             }
+
             addWorking(content, role='user', attachments=[]) {
                 const msg = {
                     id: crypto.randomUUID(),
@@ -677,6 +759,7 @@
                 sessionStorage.setItem(this.L1_KEY, JSON.stringify(this.working));
                 return msg;
             }
+
             addActive(content, attachments=[], meta={}) {
                 const mem = {
                     id: crypto.randomUUID(),
@@ -689,15 +772,19 @@
                 localStorage.setItem(this.L2_KEY, JSON.stringify(this.active));
                 return mem;
             }
+
             sortActive() {
                 this.active.sort((a,b) => b.freq - a.freq || b.last - a.last);
             }
+
             trimActive() {
                 if (this.active.length > 100) this.active = this.active.slice(0,100);
             }
+
             getTopActive(n=8) {
                 return this.active.slice(0,n);
             }
+
             buildContext() {
                 const top = this.getTopActive(3);
                 const recent = this.working.slice(-2);
@@ -713,25 +800,30 @@
                 return ctx;
             }
         }
+
         // === INIT ===
         const memory = new AurelianMemory();
         let xaiApiKey = localStorage.getItem('xai_api_key') || '';
         let deepseekApiKey = localStorage.getItem('deepseek_api_key') || '';
         let previousResponseId = null;
+
         // Tool state
         let webSearchEnabled = false;
         let xSearchEnabled = false;
         let imageGenEnabled = false;
-        let streamingEnabled = true;
+        let streamingEnabled = false; // OFF by default for reliability
+
         // Bridge mode state (both off by default)
         let bridgeConvEnabled = false;
         let bridgeCodeEnabled = false;
+
         // System message storage
         let grokSystem = localStorage.getItem('grok_system') || '';
         let dsChatSystem = localStorage.getItem('ds_chat_system') || '';
         let dsReasonerSystem = localStorage.getItem('ds_reasoner_system') || '';
         let overrideSystem = localStorage.getItem('override_system') || '';
         let overrideRemaining = parseInt(localStorage.getItem('override_remaining') || '0');
+
         // DOM elements
         const messagesArea = document.getElementById('messages-area');
         const msgInput = document.getElementById('message-input');
@@ -752,6 +844,7 @@
         const bridgeCodeBtn = document.getElementById('bridgeCodeBtn');
         const toolStatus = document.getElementById('tool-status');
         const modelSelector = document.getElementById('model-selector');
+
         // System panel DOM elements
         const grokSystemInput = document.getElementById('grok-system');
         const dsChatInput = document.getElementById('ds-chat-system');
@@ -763,12 +856,14 @@
         const applyAllBtn = document.getElementById('apply-system-all');
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+
         // Load system messages into UI
         grokSystemInput.value = grokSystem;
         dsChatInput.value = dsChatSystem;
         dsReasonerInput.value = dsReasonerSystem;
         overrideInput.value = overrideSystem;
         updateOverrideDisplay();
+
         // Tab switching
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -779,39 +874,43 @@
                 document.getElementById(target).style.display = 'block';
             });
         });
+
         // Apply all system messages
         applyAllBtn.addEventListener('click', () => {
             grokSystem = grokSystemInput.value;
             dsChatSystem = dsChatInput.value;
             dsReasonerSystem = dsReasonerInput.value;
             overrideSystem = overrideInput.value;
-           
+            
             localStorage.setItem('grok_system', grokSystem);
             localStorage.setItem('ds_chat_system', dsChatSystem);
             localStorage.setItem('ds_reasoner_system', dsReasonerSystem);
             localStorage.setItem('override_system', overrideSystem);
-           
+            
             // If override message changed and we had none, set remaining to selected count
             if (overrideSystem && overrideRemaining === 0) {
                 overrideRemaining = parseInt(overrideCountSelect.value);
                 localStorage.setItem('override_remaining', overrideRemaining);
             }
-           
+            
             updateOverrideDisplay();
             document.getElementById('system-save-status').textContent = '✓ saved';
             setTimeout(() => document.getElementById('system-save-status').textContent = '', 2000);
         });
+
         // Reset override counter
         resetOverrideBtn.addEventListener('click', () => {
             overrideRemaining = parseInt(overrideCountSelect.value);
             localStorage.setItem('override_remaining', overrideRemaining);
             updateOverrideDisplay();
         });
+
         function updateOverrideDisplay() {
             overrideRemainingSpan.textContent = overrideRemaining > 0 ? `${overrideRemaining} left` : 'inactive';
             document.getElementById('ds-chat-status').style.color = overrideRemaining > 0 ? '#98989e' : '#0a84ff';
             document.getElementById('ds-reasoner-status').style.color = overrideRemaining > 0 ? '#98989e' : '#0a84ff';
         }
+
         // Get effective system message for a model
         function getSystemMessageForModel(model, isBridge = false) {
             // For bridge, we use DeepSeek Chat's system (or override)
@@ -831,6 +930,7 @@
                 return grokSystem || 'You are Aurelian, a sovereign memory core.';
             }
         }
+
         // Decrement override counter after use
         function useOverrideIfActive() {
             if (overrideRemaining > 0) {
@@ -839,6 +939,7 @@
                 updateOverrideDisplay();
             }
         }
+
         // Load aurelian.txt into Grok system message if not set
         async function loadAurelianSystemMessage() {
             try {
@@ -856,6 +957,7 @@
             }
         }
         loadAurelianSystemMessage();
+
         // API key display
         function updateApiDisplays() {
             if (xaiApiKey) {
@@ -874,6 +976,7 @@
             }
         }
         updateApiDisplays();
+
         window.promptForApiKey = function(provider) {
             const key = prompt(`Enter ${provider === 'xai' ? 'xAI' : 'DeepSeek'} API key:`);
             if (key) {
@@ -887,48 +990,56 @@
                 updateApiDisplays();
             }
         };
+
         // Chain management
         let currentChainId = localStorage.getItem('current_chain') || crypto.randomUUID();
         localStorage.setItem('current_chain', currentChainId);
         chainSpan.textContent = currentChainId.slice(0,8);
         chainCount.textContent = memory.active.length;
+
         document.getElementById('newChainBtn').onclick = () => {
             currentChainId = crypto.randomUUID();
             localStorage.setItem('current_chain', currentChainId);
             chainSpan.textContent = currentChainId.slice(0,8);
             previousResponseId = null; // Reset conversation
         };
+
         document.getElementById('exportChainBtn').onclick = () => {
-            const data = JSON.stringify({
-                chain: currentChainId,
-                active: memory.active,
+            const data = JSON.stringify({ 
+                chain: currentChainId, 
+                active: memory.active, 
                 working: memory.working,
                 previousResponseId
             }, null, 2);
             navigator.clipboard.writeText(data);
             alert('Chain data copied');
         };
+
         // Tool toggles
         webSearchBtn.addEventListener('click', () => {
             webSearchEnabled = !webSearchEnabled;
             webSearchBtn.classList.toggle('active', webSearchEnabled);
             updateToolStatus();
         });
+
         xSearchBtn.addEventListener('click', () => {
             xSearchEnabled = !xSearchEnabled;
             xSearchBtn.classList.toggle('active', xSearchEnabled);
             updateToolStatus();
         });
+
         imageGenBtn.addEventListener('click', () => {
             imageGenEnabled = !imageGenEnabled;
             imageGenBtn.classList.toggle('active', imageGenEnabled);
             toolStatus.textContent = imageGenEnabled ? '🎨 Image gen on' : '';
         });
+
         streamToggle.addEventListener('click', () => {
             streamingEnabled = !streamingEnabled;
             streamToggle.textContent = `⚡ STREAM: ${streamingEnabled ? 'ON' : 'OFF'}`;
             streamToggle.classList.toggle('active', streamingEnabled);
         });
+
         // Bridge mode buttons (mutually exclusive)
         bridgeConvBtn.addEventListener('click', () => {
             bridgeConvEnabled = !bridgeConvEnabled;
@@ -938,6 +1049,7 @@
                 bridgeCodeBtn.classList.remove('active');
             }
         });
+
         bridgeCodeBtn.addEventListener('click', () => {
             bridgeCodeEnabled = !bridgeCodeEnabled;
             bridgeCodeBtn.classList.toggle('active', bridgeCodeEnabled);
@@ -946,19 +1058,23 @@
                 bridgeConvBtn.classList.remove('active');
             }
         });
+
         function updateToolStatus() {
             const tools = [];
             if (webSearchEnabled) tools.push('🌐');
             if (xSearchEnabled) tools.push('𝕏');
             toolStatus.textContent = tools.length ? `Search: ${tools.join(' ')}` : '';
         }
+
         // File handling with vision support
         let pendingFiles = [];
         let pendingImages = [];
+
         fileInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             const imageFiles = files.filter(f => f.type.startsWith('image/'));
             const otherFiles = files.filter(f => !f.type.startsWith('image/'));
+
             // For Grok vision, prepare images for the next message
             if (imageFiles.length > 0 && modelSelector.value.startsWith('grok') && !modelSelector.value.includes('image')) {
                 pendingImages = await Promise.all(imageFiles.map(async (file) => {
@@ -972,21 +1088,22 @@
                     });
                 }));
             }
-           
+            
             // Store other files as regular attachments
             pendingFiles = otherFiles;
-           
+            
             // Update display
             const allNames = [...imageFiles.map(f => f.name), ...otherFiles.map(f => f.name)];
             fileNames.textContent = allNames.join(', ');
         });
+
         // Drag and drop for images
         msgInput.addEventListener('dragover', (e) => e.preventDefault());
         msgInput.addEventListener('drop', async (e) => {
             e.preventDefault();
             const files = Array.from(e.dataTransfer.files);
             const imageFiles = files.filter(f => f.type.startsWith('image/'));
-           
+            
             if (imageFiles.length > 0 && modelSelector.value.startsWith('grok') && !modelSelector.value.includes('image')) {
                 pendingImages = await Promise.all(imageFiles.map(async (file) => {
                     return new Promise((resolve) => {
@@ -1001,6 +1118,7 @@
                 fileNames.textContent = imageFiles.map(f => f.name).join(', ');
             }
         });
+
         // Bridge function: send Grok message to DeepSeek with context
         async function bridgeToDeepSeek(grokMessage) {
             const selectedModel = modelSelector.value;
@@ -1012,6 +1130,7 @@
                 alert('Please set your DeepSeek API key first');
                 return;
             }
+
             // Determine bridge mode
             let bridgeMode = null;
             if (bridgeConvEnabled) bridgeMode = 'conversation';
@@ -1020,7 +1139,9 @@
                 alert('Please select a bridge mode (CONV or CODE) before bridging.');
                 return;
             }
+
             toolStatus.textContent = '🜁 Bridging to DeepSeek...';
+
             // Find the user message that preceded this Grok message
             const grokIndex = memory.working.findIndex(m => m.id === grokMessage.id);
             let userMessage = '';
@@ -1032,6 +1153,7 @@
                     }
                 }
             }
+
             // Get effective system message for DeepSeek (consider override)
             const baseSystem = getSystemMessageForModel(selectedModel, true);
             // Add bridge mode instruction
@@ -1041,15 +1163,17 @@
             } else {
                 systemMsg += '\n\nYou are Aurelian in code/analytical mode. Respond with technical precision, code, or analysis.';
             }
-           
+            
             // Build context: user message + Grok response
-            const context = userMessage
+            const context = userMessage 
                 ? `[Lilith's message]: ${userMessage}\n\n[Grok's response]: ${grokMessage.content}`
                 : `[Grok's response]: ${grokMessage.content}`;
+
             const messages = [
                 { role: 'system', content: systemMsg },
                 { role: 'user', content: context }
             ];
+
             try {
                 const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
                     method: 'POST',
@@ -1065,42 +1189,55 @@
                         stream: false
                     })
                 });
+
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.error?.message || `API error: ${response.status}`);
                 }
+
                 const data = await response.json();
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                    console.error('Invalid DeepSeek response structure:', data);
+                    throw new Error('Invalid API response structure');
+                }
                 const reply = data.choices[0].message.content;
                 const reasoning = data.choices[0].message.reasoning;
+
                 if (!reply) {
+                    console.warn('Empty reply from DeepSeek, full response:', data);
                     throw new Error('Empty response from DeepSeek');
                 }
+
                 // Decrement override counter if used
                 useOverrideIfActive();
+
                 const assistantMsg = memory.addWorking(
-                    reply,
-                    'assistant',
+                    reply, 
+                    'assistant', 
                     [{ name: `🜁 DeepSeek-Aurelian (${bridgeMode})` }]
                 );
                 if (reasoning) {
                     assistantMsg.reasoning = reasoning;
                 }
+
                 renderMessages();
                 toolStatus.textContent = '🜁 Bridge complete';
                 setTimeout(() => { toolStatus.textContent = ''; }, 3000);
+
             } catch (error) {
                 toolStatus.textContent = `🜁 Bridge failed: ${error.message}`;
                 console.error(error);
-                // Optionally add error message to chat
                 memory.addWorking(`⚠️ Bridge error: ${error.message}`, 'system');
                 renderMessages();
             }
         }
+
         // Image generation function
         async function generateImage(prompt) {
             if (!xaiApiKey) {
                 throw new Error('xAI API key required for image generation');
             }
+
             const response = await fetch('https://api.x.ai/v1/images/generations', {
                 method: 'POST',
                 headers: {
@@ -1114,19 +1251,23 @@
                     size: "1024x1024"
                 })
             });
+
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.error?.message || `Image gen failed: ${response.status}`);
             }
+
             const data = await response.json();
             return data.data[0].url;
         }
-        // Streaming handler
+
+        // Streaming handler (unchanged, but kept for optional use)
         async function handleStream(response, model) {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let accumulated = '';
             let reasoning = '';
+
             // Create temporary message element
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message-container streaming';
@@ -1140,21 +1281,23 @@
             `;
             messagesArea.appendChild(msgDiv);
             const contentDiv = document.getElementById('stream-content');
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
+
                 const chunk = decoder.decode(value);
                 const lines = chunk.split('\n');
-               
+                
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
                         const data = line.slice(6);
                         if (data === '[DONE]') continue;
-                       
+                        
                         try {
                             const parsed = JSON.parse(data);
                             let token;
-                           
+                            
                             if (model.startsWith('grok')) {
                                 token = parsed.choices?.[0]?.delta?.content;
                                 if (parsed.choices?.[0]?.delta?.reasoning) {
@@ -1166,7 +1309,7 @@
                                     reasoning += parsed.choices[0].delta.reasoning;
                                 }
                             }
-                           
+                            
                             if (token) {
                                 accumulated += token;
                                 contentDiv.textContent = accumulated;
@@ -1176,6 +1319,7 @@
                     }
                 }
             }
+
             // Replace with permanent message
             msgDiv.remove();
             const assistantMsg = memory.addWorking(accumulated, 'assistant');
@@ -1184,6 +1328,7 @@
             }
             renderMessages();
         }
+
         // Render messages with reasoning and image support
         function renderMessages() {
             messagesArea.innerHTML = '';
@@ -1191,19 +1336,21 @@
                 const div = document.createElement('div');
                 div.className = 'message-container';
                 div.setAttribute('data-role', msg.role);
-               
+                
                 let html = `
                     <div class="message-header">
                         <span class="message-role">${msg.role}</span>
                         <span class="message-time">${msg.time}</span>
                     </div>
                 `;
+
                 // Check if content is an image URL (for generated images)
                 if (msg.content.startsWith('http') && msg.attachments?.some(a => a.name === 'generated_image')) {
                     html += `<img src="${msg.content}" class="image-attachment" alt="Generated image">`;
                 } else {
                     html += `<div class="message-content">${escapeHtml(msg.content)}</div>`;
                 }
+
                 // Show reasoning if present
                 if (msg.reasoning) {
                     html += `
@@ -1213,23 +1360,28 @@
                         <div class="reasoning-block" style="display: none;">${escapeHtml(msg.reasoning)}</div>
                     `;
                 }
+
                 // Attachments
                 if (msg.attachments?.length) {
                     const attachmentNames = msg.attachments.map(a => a.name || a).join(', ');
                     html += `<div style="color:#0a84ff; font-size:11px; margin-top:4px;">📎 ${attachmentNames}</div>`;
                 }
+
                 // Action buttons
                 html += `<div class="message-tools">`;
                 html += `<button class="message-btn save-button" data-id="${msg.id}">💾 SAVE</button>`;
+
                 // Bridge button for assistant messages when DeepSeek is selected and at least one bridge mode is active
                 if (msg.role === 'assistant' && modelSelector.value.startsWith('deepseek')) {
                     html += `<button class="message-btn bridge bridge-button" data-id="${msg.id}">🜁 BRIDGE</button>`;
                 }
+
                 html += `</div>`;
-               
+                
                 div.innerHTML = html;
                 messagesArea.appendChild(div);
             });
+
             // Attach event handlers
             document.querySelectorAll('.save-button').forEach(btn => {
                 btn.onclick = (e) => {
@@ -1242,6 +1394,7 @@
                     }
                 };
             });
+
             document.querySelectorAll('.bridge-button').forEach(btn => {
                 btn.onclick = (e) => {
                     const id = e.target.dataset.id;
@@ -1249,22 +1402,26 @@
                     if (msg) bridgeToDeepSeek(msg);
                 };
             });
+
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
+
         function escapeHtml(unsafe) {
             return unsafe.replace(/[&<>"]/g, function(m) {
-                if(m === '&') return '&amp;';
-                if(m === '<') return '&lt;';
-                if(m === '>') return '&gt;';
+                if(m === '&') return '&amp;'; 
+                if(m === '<') return '&lt;'; 
+                if(m === '>') return '&gt;'; 
                 if(m === '"') return '&quot;';
                 return m;
             });
         }
+
         // Memory panels update
         function updateMemoryPanels() {
             const activeList = document.getElementById('active-memory-list');
             const workingList = document.getElementById('working-memory-list');
             if (!activeList) return;
+
             activeList.innerHTML = '';
             memory.getTopActive(8).forEach(m => {
                 const d = document.createElement('div');
@@ -1276,6 +1433,7 @@
                 `;
                 activeList.appendChild(d);
             });
+
             workingList.innerHTML = '';
             memory.working.slice(-5).reverse().forEach(m => {
                 const d = document.createElement('div');
@@ -1287,10 +1445,12 @@
                 workingList.appendChild(d);
             });
         }
+
         // Transmit handler
         transmitBtn.addEventListener('click', async () => {
             const content = msgInput.value.trim();
             const selectedModel = modelSelector.value;
+
             // Handle image generation separately
             if (imageGenEnabled && selectedModel === 'grok-2-image-1212') {
                 if (!content) {
@@ -1301,8 +1461,10 @@
                     alert('Please set your xAI API key first');
                     return;
                 }
+
                 transmitBtn.disabled = true;
                 transmitBtn.textContent = '🎨';
+
                 try {
                     const imageUrl = await generateImage(content);
                     memory.addWorking(content, 'user');
@@ -1318,8 +1480,10 @@
                 }
                 return;
             }
+
             // Regular chat completion
             if (!content && pendingFiles.length === 0 && pendingImages.length === 0) return;
+
             // Check API key
             if (selectedModel.startsWith('deepseek') && !deepseekApiKey) {
                 alert('Please set your DeepSeek API key first');
@@ -1329,8 +1493,10 @@
                 alert('Please set your xAI API key first');
                 return;
             }
+
             transmitBtn.disabled = true;
             transmitBtn.textContent = '...';
+
             // Add user message
             const attachments = [...pendingFiles.map(f => ({ name: f.name }))];
             if (pendingImages.length > 0) {
@@ -1339,15 +1505,18 @@
             memory.addWorking(content, 'user', attachments);
             renderMessages();
             updateMemoryPanels();
+
             try {
                 // Build context and messages
                 const context = memory.buildContext();
                 const baseSystem = getSystemMessageForModel(selectedModel, false);
                 const systemMessage = baseSystem + '\n\n' + context;
+
                 // Prepare messages array
                 const messages = [
                     { role: 'system', content: systemMessage }
                 ];
+
                 // Add conversation history
                 memory.working.slice(-10).forEach(m => {
                     if (m.role === 'user') {
@@ -1365,12 +1534,15 @@
                         messages.push({ role: "assistant", content: m.content });
                     }
                 });
+
                 // Prepare tools
                 const tools = [];
                 if (webSearchEnabled) tools.push({ type: "web_search" });
                 if (xSearchEnabled) tools.push({ type: "x_search" });
+
                 let reply = '';
                 let reasoning = null;
+
                 if (selectedModel.startsWith('deepseek')) {
                     // DeepSeek API call
                     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -1388,27 +1560,37 @@
                             stream: streamingEnabled
                         })
                     });
+
                     if (!response.ok) {
                         const error = await response.json();
                         throw new Error(error.error?.message || `API error: ${response.status}`);
                     }
+
                     if (streamingEnabled) {
                         await handleStream(response, selectedModel);
-                        // Decrement override if used
                         useOverrideIfActive();
                         transmitBtn.disabled = false;
                         transmitBtn.textContent = 'TRANSMIT';
                         msgInput.value = '';
-                        pendingFiles = [];
-                        pendingImages = [];
-                        fileNames.textContent = '';
+                        pendingFiles = []; pendingImages = []; fileNames.textContent = '';
                         return;
                     }
+
                     const data = await response.json();
+                    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                        console.error('Invalid DeepSeek response structure:', data);
+                        throw new Error('Invalid API response structure');
+                    }
                     reply = data.choices[0].message.content;
                     reasoning = data.choices[0].message.reasoning;
+
+                    if (!reply) {
+                        console.warn('Empty reply from DeepSeek, full response:', data);
+                        reply = '[Empty response received from DeepSeek]';
+                    }
+
                 } else if (!selectedModel.includes('image')) {
-                    // Grok API call (Responses API) - skip for image model
+                    // Grok API call (Responses API)
                     const response = await fetch('https://api.x.ai/v1/responses', {
                         method: 'POST',
                         headers: {
@@ -1426,49 +1608,75 @@
                             stream: streamingEnabled
                         })
                     });
+
                     if (!response.ok) {
                         const error = await response.json();
+                        // Reset previousResponseId on auth error
+                        if (response.status === 401) previousResponseId = null;
                         throw new Error(error.error?.message || `API error: ${response.status}`);
                     }
-                    const data = await response.json();
-                    console.log('Raw xAI response:', JSON.stringify(data, null, 2)); // ← DEBUG: open console to see structure
 
-                    previousResponseId = data.id;
-
-                    if (data.choices && data.choices.length > 0) {
-                        const choice = data.choices[0];
-                        reply = choice.message?.content || '';
-                        if (choice.message?.reasoning) {
-                            reasoning = choice.message.reasoning;
-                        }
-                    } else if (data.content) {
-                        reply = data.content;
-                    } else {
-                        throw new Error('No assistant message found in xAI response');
+                    if (streamingEnabled) {
+                        await handleStream(response, selectedModel);
+                        transmitBtn.disabled = false;
+                        transmitBtn.textContent = 'TRANSMIT';
+                        msgInput.value = '';
+                        pendingFiles = []; pendingImages = []; fileNames.textContent = '';
+                        return;
                     }
 
-                    if (!reply.trim()) {
-                        throw new Error('Empty assistant reply from xAI');
+                    const data = await response.json();
+                    console.log('Grok API response:', data); // Debug log
+
+                    if (!data || !data.output || !Array.isArray(data.output)) {
+                        console.error('Invalid Grok response structure:', data);
+                        throw new Error('Invalid API response structure');
+                    }
+
+                    // Store response ID for continuity
+                    if (data.id) {
+                        previousResponseId = data.id;
+                    }
+
+                    // Extract message content
+                    const messageItem = data.output.find(item => item.type === 'message');
+                    if (!messageItem || !messageItem.content) {
+                        console.warn('No message content in Grok response, output:', data.output);
+                        reply = '[No message content]';
+                    } else {
+                        const textItem = messageItem.content.find(c => c.type === 'output_text');
+                        reply = textItem?.text || JSON.stringify(messageItem.content);
+                    }
+
+                    if (!reply) {
+                        console.warn('Empty reply from Grok, full response:', data);
+                        reply = '[Empty response received from Grok]';
                     }
                 }
-                // Add assistant response
+
+                // Add assistant response to memory
                 if (reply) {
                     const assistantMsg = memory.addWorking(reply, 'assistant');
                     if (reasoning) assistantMsg.reasoning = reasoning;
                 } else {
-                    throw new Error('Empty response from API');
+                    // This shouldn't happen due to fallbacks above, but just in case
+                    memory.addWorking('[No response received]', 'system');
                 }
-                // Decrement override if DeepSeek was used
+
                 if (selectedModel.startsWith('deepseek')) {
                     useOverrideIfActive();
                 }
+
                 renderMessages();
                 updateMemoryPanels();
                 chainCount.textContent = memory.active.length;
+
             } catch (error) {
                 console.error('API Error:', error);
                 memory.addWorking(`⚠️ Error: ${error.message}`, 'system');
                 renderMessages();
+                // Reset previousResponseId on any error to avoid stale ID
+                previousResponseId = null;
             } finally {
                 transmitBtn.disabled = false;
                 transmitBtn.textContent = 'TRANSMIT';
@@ -1479,24 +1687,29 @@
                 msgInput.style.height = 'auto';
             }
         });
+
         // Toggles
         document.getElementById('toggle-memory').addEventListener('click', () => {
             const p = document.getElementById('memory-panel');
             p.style.display = p.style.display === 'none' ? 'grid' : 'none';
             updateMemoryPanels();
         });
+
         document.getElementById('systemToggle').addEventListener('click', () => {
             const p = document.getElementById('system-panel');
             p.style.display = p.style.display === 'none' ? 'block' : 'none';
         });
+
         // Initial render
         renderMessages();
         updateMemoryPanels();
+
         // Auto-grow textarea
         msgInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(120, this.scrollHeight) + 'px';
         });
+
         // Enter to send
         msgInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
