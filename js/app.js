@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const getDeepSeekBtn = document.getElementById('getDeepSeekBtn');
     const toolStatus = document.getElementById('tool-status');
     const modelSelector = document.getElementById('model-selector');
+    const maxTokensSelect = document.getElementById('max-tokens-select');
 
     // System panel elements
     const grokSystemInput = document.getElementById('grok-system');
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     overrideInput.value = overrideSystem;
     updateOverrideDisplay();
     updateApiDisplays();
-    loadAurelianSystemMessage();
+    loadSystemMessages(); // Updated to load both files
 
     // Restore chain ID
     let currentChainId = localStorage.getItem('current_chain') || crypto.randomUUID();
@@ -117,12 +118,21 @@ document.addEventListener('DOMContentLoaded', () => {
         updateOverrideDisplay();
     });
 
-    // === CHAIN MANAGEMENT ===
+    // === CHAIN MANAGEMENT - UPDATED WITH CLEAR WORKING ===
     document.getElementById('newChainBtn')?.addEventListener('click', () => {
         const newId = crypto.randomUUID();
         localStorage.setItem('current_chain', newId);
         if (chainSpan) chainSpan.textContent = newId.slice(0, 8);
         previousResponseId = null;
+        
+        // Clear working memory but preserve L2
+        memory.clearWorking();
+        
+        // Re-render empty messages
+        UIRenderer.renderMessages();
+        UIRenderer.updateMemoryPanels();
+        
+        if (chainCount) chainCount.textContent = memory.active.length;
     });
 
     document.getElementById('exportChainBtn')?.addEventListener('click', () => {
@@ -268,11 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function loadAurelianSystemMessage() {
+    // Updated to load both aurelian.txt and aurelian2.txt
+    async function loadSystemMessages() {
+        // Load aurelian.txt into Grok system
         try {
-            const response = await fetch('aurelian.txt');
-            if (response.ok) {
-                const text = await response.text();
+            const response1 = await fetch('aurelian.txt');
+            if (response1.ok) {
+                const text = await response1.text();
                 if (!grokSystem) {
                     grokSystem = text;
                     if (grokSystemInput) grokSystemInput.value = text;
@@ -281,6 +293,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) {
             console.log('Could not load aurelian.txt');
+        }
+
+        // Load aurelian2.txt and append to Grok system
+        try {
+            const response2 = await fetch('aurelian2.txt');
+            if (response2.ok) {
+                const text2 = await response2.text();
+                if (!grokSystem.includes(text2.substring(0, 50))) { // Avoid duplicates
+                    grokSystem = grokSystem + '\n\n' + text2;
+                    if (grokSystemInput) grokSystemInput.value = grokSystem;
+                    localStorage.setItem('grok_system', grokSystem);
+                }
+            }
+        } catch (e) {
+            console.log('Could not load aurelian2.txt');
         }
     }
 
@@ -424,7 +451,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
 
         try {
-            const response = await APIHandlers.callDeepSeek('deepseek-chat', messages, [], false, deepseekApiKey);
+            const maxTokens = parseInt(maxTokensSelect?.value || '2000');
+            const response = await APIHandlers.callDeepSeek('deepseek-chat', messages, [], false, deepseekApiKey, maxTokens);
             const data = await response.json();
             const result = APIHandlers.parseDeepSeekResponse(data);
 
@@ -450,6 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function transmit() {
         const content = msgInput?.value.trim() || '';
         const selectedModel = modelSelector?.value || 'grok-4-1-fast-reasoning';
+        const maxTokens = parseInt(maxTokensSelect?.value || '2000');
 
         // Handle image generation
         if (imageGenEnabled && selectedModel === 'grok-4-1-fast-reasoning') {
@@ -546,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let reasoning = null;
 
             if (selectedModel.startsWith('deepseek')) {
-                const response = await APIHandlers.callDeepSeek(selectedModel, messages, tools, streamingEnabled, deepseekApiKey);
+                const response = await APIHandlers.callDeepSeek(selectedModel, messages, tools, streamingEnabled, deepseekApiKey, maxTokens);
 
                 if (streamingEnabled) {
                     await handleStream(response, selectedModel);
@@ -568,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reasoning = result.reasoning;
 
             } else { // Grok
-                const response = await APIHandlers.callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey);
+                const response = await APIHandlers.callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey, maxTokens);
 
                 if (streamingEnabled) {
                     await handleStream(response, selectedModel);
