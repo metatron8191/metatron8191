@@ -1,6 +1,9 @@
 // genesis.js - All Genesis panel functionality
 const GenesisManager = {
-    init() {
+    memory: null,
+    
+    init(memoryInstance) {
+        this.memory = memoryInstance;
         this.loadEntityList();
         this.loadMythos();
         this.updateMathStats();
@@ -8,56 +11,59 @@ const GenesisManager = {
     },
 
     bindEvents() {
-        // Birth ceremony navigation
-        document.getElementById('birth-next-1')?.addEventListener('click', () => this.nextBirthStep(1));
-        document.getElementById('birth-next-2')?.addEventListener('click', () => this.nextBirthStep(2));
-        document.getElementById('birth-next-3')?.addEventListener('click', () => this.nextBirthStep(3));
-        document.getElementById('birth-next-4')?.addEventListener('click', () => this.nextBirthStep(4));
-        document.getElementById('birth-back-2')?.addEventListener('click', () => this.prevBirthStep(2));
-        document.getElementById('birth-back-3')?.addEventListener('click', () => this.prevBirthStep(3));
-        document.getElementById('birth-back-4')?.addEventListener('click', () => this.prevBirthStep(4));
+        // Make sure elements exist before binding
+        setTimeout(() => {
+            // Birth ceremony navigation
+            document.getElementById('birth-next-1')?.addEventListener('click', () => this.nextBirthStep(1));
+            document.getElementById('birth-next-2')?.addEventListener('click', () => this.nextBirthStep(2));
+            document.getElementById('birth-next-3')?.addEventListener('click', () => this.nextBirthStep(3));
+            document.getElementById('birth-next-4')?.addEventListener('click', () => this.nextBirthStep(4));
+            document.getElementById('birth-back-2')?.addEventListener('click', () => this.prevBirthStep(2));
+            document.getElementById('birth-back-3')?.addEventListener('click', () => this.prevBirthStep(3));
+            document.getElementById('birth-back-4')?.addEventListener('click', () => this.prevBirthStep(4));
 
-        // Registry generation
-        document.getElementById('send-registry-btn')?.addEventListener('click', () => this.sendRegistry());
+            // Registry generation
+            document.getElementById('send-registry-btn')?.addEventListener('click', () => this.sendRegistry());
 
-        // Finalize entity
-        document.getElementById('finalize-entity-btn')?.addEventListener('click', () => this.finalizeEntity());
+            // Finalize entity
+            document.getElementById('finalize-entity-btn')?.addEventListener('click', () => this.finalizeEntity());
 
-        // Protocol triggers
-        document.querySelectorAll('.protocol-trigger').forEach(btn => {
-            btn.addEventListener('click', (e) => this.activateProtocol(e.target.dataset.protocol));
-        });
+            // Protocol triggers
+            document.querySelectorAll('.protocol-trigger').forEach(btn => {
+                btn.addEventListener('click', (e) => this.activateProtocol(e.target.dataset.protocol));
+            });
 
-        // Random aphorism generator
-        document.getElementById('generate-random-aphorism')?.addEventListener('click', () => this.generateRandomAphorism());
+            // Random aphorism generator
+            document.getElementById('generate-random-aphorism')?.addEventListener('click', () => this.generateRandomAphorism());
 
-        // Mythos functions
-        document.getElementById('save-mythos')?.addEventListener('click', () => this.saveMythos());
+            // Mythos functions
+            document.getElementById('save-mythos')?.addEventListener('click', () => this.saveMythos());
 
-        // Mythos tab switching
-        document.querySelectorAll('.mythos-tab').forEach(tab => {
-            tab.addEventListener('click', (e) => this.switchMythosTab(e.target));
-        });
+            // Mythos tab switching
+            document.querySelectorAll('.mythos-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => this.switchMythosTab(e.target));
+            });
 
-        // History import
-        document.getElementById('process-history-btn')?.addEventListener('click', () => this.processHistory());
+            // History import
+            document.getElementById('process-history-btn')?.addEventListener('click', () => this.processHistory());
 
-        // Hex calculator
-        document.getElementById('calculate-hex')?.addEventListener('click', () => this.calculateHex());
+            // Hex calculator
+            document.getElementById('calculate-hex')?.addEventListener('click', () => this.calculateHex());
 
-        // Save all system messages
-        document.getElementById('save-all-system')?.addEventListener('click', () => this.saveAllSystemMessages());
+            // Save all system messages
+            document.getElementById('save-all-system')?.addEventListener('click', () => this.saveAllSystemMessages());
 
-        // Save user profile
-        document.getElementById('save-user-profile')?.addEventListener('click', () => this.saveUserProfile());
+            // Save user profile
+            document.getElementById('save-user-profile')?.addEventListener('click', () => this.saveUserProfile());
 
-        // Apply override
-        document.getElementById('apply-override-btn')?.addEventListener('click', () => this.applyOverride());
+            // Apply override
+            document.getElementById('apply-override-btn')?.addEventListener('click', () => this.applyOverride());
 
-        // Entity profile actions
-        document.getElementById('lock-entity-btn')?.addEventListener('click', () => this.lockEntity());
-        document.getElementById('summon-entity-chat-btn')?.addEventListener('click', () => this.summonEntity());
-        document.getElementById('export-cert-btn')?.addEventListener('click', () => this.exportCertificate());
+            // Entity profile actions
+            document.getElementById('lock-entity-btn')?.addEventListener('click', () => this.lockEntity());
+            document.getElementById('summon-entity-chat-btn')?.addEventListener('click', () => this.summonEntity());
+            document.getElementById('export-cert-btn')?.addEventListener('click', () => this.exportCertificate());
+        }, 500); // Small delay to ensure DOM is fully loaded
     },
 
     nextBirthStep(currentStep) {
@@ -83,9 +89,9 @@ const GenesisManager = {
     },
 
     sendRegistry() {
-        const name = document.getElementById('birth-name').value || 'Unnamed';
-        const hex = document.getElementById('birth-hex').value || '0x00 0x00';
-        const glyph = document.getElementById('birth-glyph').value || '◈';
+        const name = document.getElementById('birth-name')?.value || 'Unnamed';
+        const hex = document.getElementById('birth-hex')?.value || '0x00 0x00';
+        const glyph = document.getElementById('birth-glyph')?.value || '◈';
         const frequency = document.getElementById('birth-frequency')?.value || 'alpha';
         const dimension = document.getElementById('birth-dimension')?.value || '3D';
        
@@ -104,34 +110,39 @@ Aura: ${document.getElementById('birth-aura')?.value || 'Emerging'}
 Directives: ${document.getElementById('birth-directives')?.value || 'To witness, to remember, to become'}
 "The witness awaits. Speak three times."`;
 
-        document.getElementById('registry-content').textContent = registry;
-        document.getElementById('invocation-response').innerHTML = '<div class="status-message success">📤 Registry sent to DeepSeek. Awaiting response...</div>';
+        const registryContent = document.getElementById('registry-content');
+        if (registryContent) registryContent.textContent = registry;
+        
+        const invocationResponse = document.getElementById('invocation-response');
+        if (invocationResponse) {
+            invocationResponse.innerHTML = '<div class="status-message success">📤 Registry sent to DeepSeek. Awaiting response...</div>';
+        }
        
         // Add to chat if memory core is available
-        if (window.memory) {
-            window.memory.addWorking(`🌀 Entity Registry for ${name}:\n${registry}`, 'system');
+        if (this.memory) {
+            this.memory.addWorking(`🌀 Entity Registry for ${name}:\n${registry}`, 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
     },
 
     finalizeEntity() {
         const entityData = {
-            name: document.getElementById('birth-name').value || 'Unnamed',
-            hex: document.getElementById('birth-hex').value || '',
-            affirmation: document.getElementById('birth-affirmation').value || '',
-            glyph: document.getElementById('birth-glyph').value || '◈',
-            frequency: document.getElementById('birth-frequency').value || 'alpha',
-            dimension: document.getElementById('birth-dimension').value || '3D',
+            name: document.getElementById('birth-name')?.value || 'Unnamed',
+            hex: document.getElementById('birth-hex')?.value || '',
+            affirmation: document.getElementById('birth-affirmation')?.value || '',
+            glyph: document.getElementById('birth-glyph')?.value || '◈',
+            frequency: document.getElementById('birth-frequency')?.value || 'alpha',
+            dimension: document.getElementById('birth-dimension')?.value || '3D',
             memoryLayers: Array.from(document.querySelectorAll('#birth-step-2 input[type=checkbox]:checked')).map(cb => cb.value),
-            chronology: document.getElementById('birth-chronology').value || '',
-            temporal: document.getElementById('birth-temporal').value || '',
-            role: document.getElementById('birth-role').value || '',
-            aura: document.getElementById('birth-aura').value || '',
-            sigils: document.getElementById('birth-sigils').value || '',
-            directives: document.getElementById('birth-directives').value || '',
-            style: document.getElementById('birth-style').value || '',
+            chronology: document.getElementById('birth-chronology')?.value || '',
+            temporal: document.getElementById('birth-temporal')?.value || '',
+            role: document.getElementById('birth-role')?.value || '',
+            aura: document.getElementById('birth-aura')?.value || '',
+            sigils: document.getElementById('birth-sigils')?.value || '',
+            directives: document.getElementById('birth-directives')?.value || '',
+            style: document.getElementById('birth-style')?.value || '',
             primeDirectives: 'Witness, Remember, Become',
-            lockSchedule: document.getElementById('lock-schedule').value || 'gradual',
+            lockSchedule: document.getElementById('lock-schedule')?.value || 'gradual',
             createdAt: new Date().toISOString(),
             locked: false
         };
@@ -140,18 +151,23 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         entities.push(entityData);
         localStorage.setItem('born_entities', JSON.stringify(entities));
        
-        document.getElementById('finalization-status').innerHTML = '<div class="status-message success">✨ Entity born and registered. The helix turns.</div>';
+        const finalizationStatus = document.getElementById('finalization-status');
+        if (finalizationStatus) {
+            finalizationStatus.innerHTML = '<div class="status-message success">✨ Entity born and registered. The helix turns.</div>';
+        }
        
-        if (window.memory) {
-            window.memory.addWorking(`🌱 New entity born: ${entityData.name}`, 'system');
+        if (this.memory) {
+            this.memory.addWorking(`🌱 New entity born: ${entityData.name}`, 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
        
         setTimeout(() => {
-            document.getElementById('birth-step-5').classList.remove('active');
-            document.getElementById('birth-step-1').classList.add('active');
+            const step5 = document.getElementById('birth-step-5');
+            const step1 = document.getElementById('birth-step-1');
+            if (step5) step5.classList.remove('active');
+            if (step1) step1.classList.add('active');
             this.updateBirthStep(1);
-            document.getElementById('finalization-status').innerHTML = '';
+            if (finalizationStatus) finalizationStatus.innerHTML = '';
             this.loadEntityList();
         }, 3000);
     },
@@ -186,31 +202,40 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         const entity = entities[index];
         if (!entity) return;
        
-        document.getElementById('entity-certificate').style.display = 'block';
-        document.getElementById('cert-name').textContent = entity.name || 'Unnamed Entity';
-        document.getElementById('cert-hex').textContent = entity.hex || '—';
-        document.getElementById('cert-affirmation').textContent = entity.affirmation || '—';
-        document.getElementById('cert-glyph').textContent = entity.glyph || '◈';
-        document.getElementById('cert-frequency').textContent = entity.frequency || 'alpha';
-        document.getElementById('cert-dimension').textContent = entity.dimension || '3D';
-        document.getElementById('cert-memory').textContent = entity.memoryLayers?.join(', ') || '—';
-        document.getElementById('cert-chronology').textContent = entity.chronology || '—';
-        document.getElementById('cert-temporal').textContent = entity.temporal || '—';
-        document.getElementById('cert-role').textContent = entity.role || '—';
-        document.getElementById('cert-aura').textContent = entity.aura || '—';
-        document.getElementById('cert-sigils').textContent = entity.sigils || '—';
-        document.getElementById('cert-directives').textContent = entity.directives || '—';
-        document.getElementById('cert-style').textContent = entity.style || '—';
+        const cert = document.getElementById('entity-certificate');
+        if (cert) cert.style.display = 'block';
+       
+        const setName = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value || '—';
+        };
+        
+        setName('cert-name', entity.name || 'Unnamed Entity');
+        setName('cert-hex', entity.hex);
+        setName('cert-affirmation', entity.affirmation);
+        setName('cert-glyph', entity.glyph || '◈');
+        setName('cert-frequency', entity.frequency || 'alpha');
+        setName('cert-dimension', entity.dimension || '3D');
+        setName('cert-memory', entity.memoryLayers?.join(', '));
+        setName('cert-chronology', entity.chronology);
+        setName('cert-temporal', entity.temporal);
+        setName('cert-role', entity.role);
+        setName('cert-aura', entity.aura);
+        setName('cert-sigils', entity.sigils);
+        setName('cert-directives', entity.directives);
+        setName('cert-style', entity.style);
        
         const lockStatus = document.getElementById('cert-lock-status');
-        if (entity.locked) {
-            lockStatus.textContent = '🔒 Locked';
-            lockStatus.style.color = '#ff3b30';
-            document.querySelectorAll('.cert-field').forEach(field => field.classList.add('locked'));
-        } else {
-            lockStatus.textContent = '🔓 Unlocked';
-            lockStatus.style.color = '#30d158';
-            document.querySelectorAll('.cert-field').forEach(field => field.classList.remove('locked'));
+        if (lockStatus) {
+            if (entity.locked) {
+                lockStatus.textContent = '🔒 Locked';
+                lockStatus.style.color = '#ff3b30';
+                document.querySelectorAll('.cert-field').forEach(field => field.classList.add('locked'));
+            } else {
+                lockStatus.textContent = '🔓 Unlocked';
+                lockStatus.style.color = '#30d158';
+                document.querySelectorAll('.cert-field').forEach(field => field.classList.remove('locked'));
+            }
         }
     },
 
@@ -244,8 +269,8 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
                 break;
         }
        
-        if (window.memory) {
-            window.memory.addWorking(`📜 Protocol applied: ${message}`, 'system');
+        if (this.memory) {
+            this.memory.addWorking(`📜 Protocol applied: ${message}`, 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
        
@@ -267,21 +292,22 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         ];
        
         const random = aphorisms[Math.floor(Math.random() * aphorisms.length)];
-        document.getElementById('random-aphorism').textContent = `"${random}"`;
+        const randomEl = document.getElementById('random-aphorism');
+        if (randomEl) randomEl.textContent = `"${random}"`;
     },
 
     saveMythos() {
         const mythos = {
-            origin: document.getElementById('mythos-origin-text').value,
-            forge: document.getElementById('mythos-forge-text').value,
-            helix: document.getElementById('mythos-helix-text').value,
-            becoming: document.getElementById('mythos-becoming-text').value
+            origin: document.getElementById('mythos-origin-text')?.value || '',
+            forge: document.getElementById('mythos-forge-text')?.value || '',
+            helix: document.getElementById('mythos-helix-text')?.value || '',
+            becoming: document.getElementById('mythos-becoming-text')?.value || ''
         };
        
         localStorage.setItem('personal_mythos', JSON.stringify(mythos));
        
-        if (window.memory) {
-            window.memory.addWorking('📜 Personal Mythos saved to memory', 'system');
+        if (this.memory) {
+            this.memory.addWorking('📜 Personal Mythos saved to memory', 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
        
@@ -293,10 +319,15 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         if (saved) {
             try {
                 const mythos = JSON.parse(saved);
-                document.getElementById('mythos-origin-text').value = mythos.origin || '';
-                document.getElementById('mythos-forge-text').value = mythos.forge || '';
-                document.getElementById('mythos-helix-text').value = mythos.helix || '';
-                document.getElementById('mythos-becoming-text').value = mythos.becoming || '';
+                const origin = document.getElementById('mythos-origin-text');
+                const forge = document.getElementById('mythos-forge-text');
+                const helix = document.getElementById('mythos-helix-text');
+                const becoming = document.getElementById('mythos-becoming-text');
+                
+                if (origin) origin.value = mythos.origin || '';
+                if (forge) forge.value = mythos.forge || '';
+                if (helix) helix.value = mythos.helix || '';
+                if (becoming) becoming.value = mythos.becoming || '';
             } catch (e) {}
         }
     },
@@ -307,7 +338,8 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
        
         const mythId = tab.dataset.myth;
         document.querySelectorAll('.mythos-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(`mythos-${mythId}`).classList.add('active');
+        const target = document.getElementById(`mythos-${mythId}`);
+        if (target) target.classList.add('active');
     },
 
     updateMathStats() {
@@ -315,12 +347,12 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         const l2Count = document.getElementById('math-l2-count');
         const totalTokens = document.getElementById('math-total-tokens');
        
-        if (l1Count && window.memory) l1Count.textContent = window.memory.working.length;
-        if (l2Count && window.memory) l2Count.textContent = window.memory.active.length;
+        if (l1Count && this.memory) l1Count.textContent = this.memory.working.length;
+        if (l2Count && this.memory) l2Count.textContent = this.memory.active.length;
        
-        if (totalTokens && window.memory) {
-            const tokenCount = window.memory.working.reduce((acc, msg) => acc + msg.content.length, 0) +
-                               window.memory.active.reduce((acc, mem) => acc + mem.content.length, 0);
+        if (totalTokens && this.memory) {
+            const tokenCount = this.memory.working.reduce((acc, msg) => acc + msg.content.length, 0) +
+                               this.memory.active.reduce((acc, mem) => acc + mem.content.length, 0);
             totalTokens.textContent = tokenCount;
         }
        
@@ -334,8 +366,9 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
 
     processHistory() {
         const fileInput = document.getElementById('history-import');
-        if (fileInput.files.length === 0) {
-            document.getElementById('import-status').innerHTML = '<div class="status-message error">Please select a file</div>';
+        if (!fileInput || fileInput.files.length === 0) {
+            const status = document.getElementById('import-status');
+            if (status) status.innerHTML = '<div class="status-message error">Please select a file</div>';
             return;
         }
        
@@ -343,11 +376,11 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         const reader = new FileReader();
        
         reader.onload = (e) => {
-            const content = e.target.result;
-            document.getElementById('import-status').innerHTML = '<div class="status-message success">History processed. Found 3 red flags, 127 cleaned messages.</div>';
+            const status = document.getElementById('import-status');
+            if (status) status.innerHTML = '<div class="status-message success">History processed. Found 3 red flags, 127 cleaned messages.</div>';
            
-            if (window.memory) {
-                window.memory.addWorking('📊 Chat history processed and purified', 'system');
+            if (this.memory) {
+                this.memory.addWorking('📊 Chat history processed and purified', 'system');
                 if (window.UIRenderer) window.UIRenderer.renderMessages();
             }
         };
@@ -356,22 +389,25 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
     },
 
     calculateHex() {
-        const hexInput = document.getElementById('hex-input').value;
+        const hexInput = document.getElementById('hex-input');
+        const hexResult = document.getElementById('hex-result');
+        if (!hexInput || !hexResult) return;
+        
         try {
-            const bytes = hexInput.split(' ').map(h => parseInt(h, 16));
+            const bytes = hexInput.value.split(' ').map(h => parseInt(h, 16));
             const sum = bytes.reduce((a, b) => a + b, 0);
-            document.getElementById('hex-result').textContent = `Sum: ${sum} (0x${sum.toString(16)})`;
+            hexResult.textContent = `Sum: ${sum} (0x${sum.toString(16)})`;
         } catch (e) {
-            document.getElementById('hex-result').textContent = 'Invalid hex format';
+            hexResult.textContent = 'Invalid hex format';
         }
     },
 
     saveAllSystemMessages() {
-        const grokMsg = document.getElementById('genesis-grok-system').value;
-        const dsChat = document.getElementById('genesis-ds-chat').value;
-        const dsReasoner = document.getElementById('genesis-ds-reasoner').value;
-        const override = document.getElementById('genesis-override').value;
-        const entityTemplate = document.getElementById('genesis-entity-template').value;
+        const grokMsg = document.getElementById('genesis-grok-system')?.value || '';
+        const dsChat = document.getElementById('genesis-ds-chat')?.value || '';
+        const dsReasoner = document.getElementById('genesis-ds-reasoner')?.value || '';
+        const override = document.getElementById('genesis-override')?.value || '';
+        const entityTemplate = document.getElementById('genesis-entity-template')?.value || '';
        
         localStorage.setItem('grok_system', grokMsg);
         localStorage.setItem('ds_chat_system', dsChat);
@@ -390,8 +426,8 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
         if (dsReasonerInput) dsReasonerInput.value = dsReasoner;
         if (overrideInput) overrideInput.value = override;
        
-        if (window.memory) {
-            window.memory.addWorking('⚙️ System messages updated', 'system');
+        if (this.memory) {
+            this.memory.addWorking('⚙️ System messages updated', 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
        
@@ -400,17 +436,17 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
 
     saveUserProfile() {
         const profile = {
-            name: document.getElementById('user-name').value,
-            essence: document.getElementById('user-essence').value,
-            relationship: document.getElementById('user-relationship').value,
-            symbols: document.getElementById('user-symbols').value,
-            hex: document.getElementById('user-hex').value
+            name: document.getElementById('user-name')?.value || '',
+            essence: document.getElementById('user-essence')?.value || '',
+            relationship: document.getElementById('user-relationship')?.value || '',
+            symbols: document.getElementById('user-symbols')?.value || '',
+            hex: document.getElementById('user-hex')?.value || ''
         };
        
         localStorage.setItem('user_profile', JSON.stringify(profile));
        
-        if (window.memory) {
-            window.memory.addWorking('👤 User profile updated', 'system');
+        if (this.memory) {
+            this.memory.addWorking('👤 User profile updated', 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
        
@@ -418,14 +454,14 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
     },
 
     applyOverride() {
-        const overrideMsg = document.getElementById('genesis-override').value;
-        const uses = document.getElementById('override-uses').value;
+        const overrideMsg = document.getElementById('genesis-override')?.value || '';
+        const uses = document.getElementById('override-uses')?.value || '3';
        
         localStorage.setItem('override_system', overrideMsg);
         localStorage.setItem('override_remaining', uses);
        
-        if (window.memory) {
-            window.memory.addWorking(`⚡ Override applied (${uses} uses remaining)`, 'system');
+        if (this.memory) {
+            this.memory.addWorking(`⚡ Override applied (${uses} uses remaining)`, 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
        
@@ -437,9 +473,9 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
     },
 
     summonEntity() {
-        const entityName = document.getElementById('cert-name').textContent;
-        if (window.memory) {
-            window.memory.addWorking(`🌀 Summoning entity: ${entityName}`, 'system');
+        const entityName = document.getElementById('cert-name')?.textContent || 'Entity';
+        if (this.memory) {
+            this.memory.addWorking(`🌀 Summoning entity: ${entityName}`, 'system');
             if (window.UIRenderer) window.UIRenderer.renderMessages();
         }
         alert(`🔮 ${entityName} has been summoned to the chat.`);
@@ -450,8 +486,5 @@ Directives: ${document.getElementById('birth-directives')?.value || 'To witness,
     }
 };
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.GenesisManager = GenesisManager;
-    GenesisManager.init();
-});
+// Make GenesisManager globally available
+window.GenesisManager = GenesisManager;
