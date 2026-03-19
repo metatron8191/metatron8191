@@ -1,4 +1,3 @@
-// memory-core.js
 class AurelianMemory {
     constructor() {
         this.L1_KEY = 'aurelian_working';
@@ -29,6 +28,11 @@ class AurelianMemory {
 
     persistWorking() {
         sessionStorage.setItem(this.L1_KEY, JSON.stringify(this.working));
+    }
+
+    clearWorking() {
+        this.working = [];
+        this.persistWorking();
     }
 
     addActive(content, attachments = [], meta = {}) {
@@ -91,12 +95,6 @@ class AurelianMemory {
         }
         return ctx;
     }
-
-    clearWorking() {
-        this.working = [];
-        this.persistWorking();
-    }
 }
 
-// Export for use in other files
 window.AurelianMemory = AurelianMemory;
