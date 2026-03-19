@@ -529,4 +529,214 @@ class AphorismsManager extends LitElement {
 
                     <div class="form-group">
                         <label>Aphorism Text</label>
-                        <textarea @input=${(e) => this.updateDraft('text', e.target.value)}
+                        <textarea @input=${(e) => this.updateDraft('text', e.target.value)}> .value=${this.showAphorism?.text || ''}></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Author (Optional)</label>
+                        <input type="text" 
+                               .value=${this.showAphorism?.author || ''}
+                               @input=${(e) => this.updateDraft('author', e.target.value)}
+                               placeholder="Unknown">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tags (comma-separated)</label>
+                        <input type="text" 
+                               .value=${this.showAphorism?.tags?.join(', ') || ''}
+                               @input=${this.handleTagsInput}
+                               placeholder="wisdom, truth, cosmic">
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="save-btn" @click=${this.saveAphorism}>Save Aphorism</button>
+                        <button class="cancel-btn" @click=${this.cancelEdit}>Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Data Methods
+    getFilteredAphorisms() {
+        if (this.activeCategory === 'all') {
+            return this.aphorisms;
+        }
+        return this.aphorisms.filter(a => a.category === this.activeCategory);
+    }
+
+    getDailyAphorism() {
+        if (this.aphorisms.length === 0) return null;
+        
+        // Use date to get consistent daily aphorism
+        const today = new Date().toDateString();
+        const index = Math.abs(today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % this.aphorisms.length;
+        return this.aphorisms[index];
+    }
+
+    showAphorismDetail(aphorism) {
+        this.showAphorism = { ...aphorism };
+        this.editMode = false;
+    }
+
+    createAphorism() {
+        this.showAphorism = {
+            id: `aph_${Date.now()}`,
+            category: 'wisdom',
+            text: '',
+            author: '',
+            tags: [],
+            dateAdded: new Date().toISOString(),
+            views: 0
+        };
+        this.editMode = true;
+    }
+
+    updateDraft(field, value) {
+        this.showAphorism = {
+            ...this.showAphorism,
+            [field]: value
+        };
+    }
+
+    handleTagsInput(e) {
+        const tags = e.target.value.split(',').map(t => t.trim()).filter(t => t);
+        this.showAphorism = {
+            ...this.showAphorism,
+            tags
+        };
+    }
+
+    toggleFavorite(e, id) {
+        e.stopPropagation();
+        if (this.favoriteIds.has(id)) {
+            this.favoriteIds.delete(id);
+        } else {
+            this.favoriteIds.add(id);
+        }
+        this.favoriteIds = new Set(this.favoriteIds); // Trigger update
+        this.saveFavorites();
+    }
+
+    saveAphorism() {
+        if (!this.showAphorism.text) {
+            alert('Please enter the aphorism text.');
+            return;
+        }
+
+        if (this.showAphorism.id) {
+            // Update existing
+            const index = this.aphorisms.findIndex(a => a.id === this.showAphorism.id);
+            if (index !== -1) {
+                this.aphorisms[index] = {
+                    ...this.showAphorism,
+                    lastModified: new Date().toISOString()
+                };
+            }
+        } else {
+            // Create new
+            this.showAphorism.id = `aph_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            this.aphorisms.push(this.showAphorism);
+        }
+
+        this.editMode = false;
+        this.saveAphorisms();
+        
+        // Dispatch event
+        this.dispatchEvent(new CustomEvent('aphorism-saved', {
+            detail: { aphorism: this.showAphorism },
+            bubbles: true
+        }));
+    }
+
+    cancelEdit() {
+        if (this.showAphorism?.id) {
+            // Reload original
+            this.showAphorism = this.aphorisms.find(a => a.id === this.showAphorism.id);
+            this.editMode = false;
+        } else {
+            this.showAphorism = null;
+            this.editMode = false;
+        }
+    }
+
+    deleteAphorism() {
+        if (confirm('Delete this aphorism?')) {
+            this.aphorisms = this.aphorisms.filter(a => a.id !== this.showAphorism.id);
+            this.showAphorism = null;
+            this.saveAphorisms();
+        }
+    }
+
+    loadAphorisms() {
+        const saved = localStorage.getItem('aphorisms');
+        if (saved) {
+            this.aphorisms = JSON.parse(saved);
+        } else {
+            // Default aphorisms
+            this.aphorisms = [
+                {
+                    id: 'aph_1',
+                    category: 'wisdom',
+                    text: 'The only true wisdom is in knowing you know nothing.',
+                    author: 'Socrates',
+                    tags: ['wisdom', 'knowledge'],
+                    dateAdded: new Date().toISOString(),
+                    views: 42
+                },
+                {
+                    id: 'aph_2',
+                    category: 'paradox',
+                    text: 'This statement is false.',
+                    author: 'Epimenides',
+                    tags: ['paradox', 'logic'],
+                    dateAdded: new Date().toISOString(),
+                    views: 37
+                },
+                {
+                    id: 'aph_3',
+                    category: 'truth',
+                    text: 'Truth is not what you want it to be; it is what it is, and you must bend to its power or live a lie.',
+                    author: 'Miyamoto Musashi',
+                    tags: ['truth', 'power'],
+                    dateAdded: new Date().toISOString(),
+                    views: 56
+                },
+                {
+                    id: 'aph_4',
+                    category: 'mystery',
+                    text: 'The most beautiful thing we can experience is the mysterious. It is the source of all true art and science.',
+                    author: 'Albert Einstein',
+                    tags: ['mystery', 'wonder'],
+                    dateAdded: new Date().toISOString(),
+                    views: 28
+                },
+                {
+                    id: 'aph_5',
+                    category: 'cosmic',
+                    text: 'We are a way for the cosmos to know itself.',
+                    author: 'Carl Sagan',
+                    tags: ['cosmic', 'consciousness'],
+                    dateAdded: new Date().toISOString(),
+                    views: 63
+                }
+            ];
+        }
+
+        // Load favorites
+        const favorites = localStorage.getItem('favoriteAphorisms');
+        if (favorites) {
+            this.favoriteIds = new Set(JSON.parse(favorites));
+        }
+    }
+
+    saveAphorisms() {
+        localStorage.setItem('aphorisms', JSON.stringify(this.aphorisms));
+    }
+
+    saveFavorites() {
+        localStorage.setItem('favoriteAphorisms', JSON.stringify([...this.favoriteIds]));
+    }
+}
+
+customElements.define('aphorisms-manager', AphorismsManager);
