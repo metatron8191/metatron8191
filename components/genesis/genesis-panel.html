@@ -15,22 +15,101 @@
         <button class="genesis-nav-btn" data-section="mythos">🔮 PERSONAL MYTHOS</button>
     </div>
    
-    <div class="genesis-content">
-        <!-- Genesis sections loaded dynamically -->
-        <div id="section-birth" class="genesis-section active"></div>
-        <div id="section-entity-profiles" class="genesis-section"></div>
-        <div id="section-user-profile" class="genesis-section"></div>
-        <div id="section-system-msgs" class="genesis-section"></div>
-        <div id="section-protocols" class="genesis-section"></div>
-        <div id="section-math" class="genesis-section"></div>
-        <div id="section-aphorisms" class="genesis-section"></div>
-        <div id="section-mythos" class="genesis-section"></div>
+    <div class="genesis-content" id="genesis-content">
+        <!-- Sections will be loaded here -->
+        <div id="section-birth" class="genesis-section active">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading Birth section...</div>
+            </div>
+        </div>
+        <div id="section-entity-profiles" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading Entity Profiles...</div>
+            </div>
+        </div>
+        <div id="section-user-profile" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading User Profile...</div>
+            </div>
+        </div>
+        <div id="section-system-msgs" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading System Messages...</div>
+            </div>
+        </div>
+        <div id="section-protocols" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading Protocols...</div>
+            </div>
+        </div>
+        <div id="section-math" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading Math...</div>
+            </div>
+        </div>
+        <div id="section-aphorisms" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading Aphorisms...</div>
+            </div>
+        </div>
+        <div id="section-mythos" class="genesis-section">
+            <div class="loading-spinner" style="text-align: center; padding: 40px; color: #0a84ff;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🌀</div>
+                <div>Loading Mythos...</div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    // Load genesis sections
-    document.addEventListener('DOMContentLoaded', () => {
+// Load genesis sections when the panel is loaded
+(function() {
+    // Function to load a single section
+    async function loadGenesisSection(sectionId, filePath) {
+        try {
+            console.log(`Loading ${sectionId} from ${filePath}`);
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const html = await response.text();
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.innerHTML = html;
+                console.log(`✅ Loaded ${sectionId}`);
+            }
+        } catch (error) {
+            console.error(`Error loading ${filePath}:`, error);
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #ff3b30;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+                        <div>Failed to load ${sectionId}</div>
+                        <div style="font-size: 11px; margin-top: 10px; color: #98989e;">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Load all sections when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadAllSections);
+    } else {
+        loadAllSections();
+    }
+
+    function loadAllSections() {
+        console.log('Loading all genesis sections...');
+        
         const sections = [
             { id: 'section-birth', file: 'components/genesis/sections/birth.html' },
             { id: 'section-entity-profiles', file: 'components/genesis/sections/entity-profiles.html' },
@@ -41,14 +120,21 @@
             { id: 'section-aphorisms', file: 'components/genesis/sections/aphorisms.html' },
             { id: 'section-mythos', file: 'components/genesis/sections/mythos.html' }
         ];
-       
-        sections.forEach(section => {
-            fetch(section.file)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById(section.id).innerHTML = html;
-                })
-                .catch(error => console.error(`Error loading ${section.file}:`, error));
-        });
-    });
+
+        // Load all sections in parallel
+        Promise.all(sections.map(s => loadGenesisSection(s.id, s.file)))
+            .then(() => {
+                console.log('All genesis sections loaded');
+                // Re-initialize GenesisManager to bind events to new elements
+                if (window.GenesisManager && window.memory) {
+                    setTimeout(() => {
+                        window.GenesisManager.init(window.memory);
+                    }, 100);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading genesis sections:', error);
+            });
+    }
+})();
 </script>
