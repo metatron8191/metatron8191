@@ -4,448 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aurelian • Memory Core • Genesis Archive</title>
-    
-    <!-- Global styles (header, toolbar, chat layout) -->
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Top Bar */
-        .top-bar {
-            background: #1c1c1e;
-            padding: 10px 20px;
-            border-bottom: 1px solid #38383a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #98989e;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #30d158;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .version {
-            color: #0a84ff;
-            font-weight: 600;
-        }
-
-        /* Toolbar */
-        .toolbar {
-            background: #2c2c2e;
-            padding: 10px 20px;
-            border-bottom: 1px solid #38383a;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .tool-btn {
-            background: #3c3c3e;
-            border: none;
-            color: #98989e;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .tool-btn:hover {
-            background: #4c4c4e;
-            color: #fff;
-        }
-
-        .tool-btn.active {
-            background: #0a84ff;
-            color: #fff;
-        }
-
-        .tool-btn.warning {
-            background: #ff453a;
-            color: #fff;
-        }
-
-        /* Advanced Controls */
-        .advanced-controls {
-            background: #2c2c2e;
-            padding: 15px 20px;
-            border-bottom: 1px solid #38383a;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .advanced-controls.hidden {
-            display: none;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .control-group label {
-            color: #98989e;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .control-group input,
-        .control-group select {
-            background: #3c3c3e;
-            border: 1px solid #48484a;
-            color: #fff;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .control-group input:focus,
-        .control-group select:focus {
-            outline: none;
-            border-color: #0a84ff;
-        }
-
-        /* System Panel */
-        .system-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px;
-            max-width: 90vw;
-            background: #1c1c1e;
-            border: 1px solid #38383a;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-            z-index: 2000;
-        }
-
-        .system-panel.hidden {
-            display: none;
-        }
-
-        .system-panel-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #38383a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .system-panel-header h3 {
-            color: #ff9f0a;
-        }
-
-        .system-panel-content {
-            padding: 20px;
-        }
-
-        /* Main Container */
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Chat Area */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-right: 10px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 14px;
-            line-height: 1.5;
-            position: relative;
-        }
-
-        .message.user {
-            background: #0a84ff;
-            color: #fff;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.system {
-            background: #2c2c2e;
-            color: #fff;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.ai {
-            background: #1c1c1e;
-            color: #fff;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            border-left: 3px solid #0a84ff;
-        }
-
-        .message-timestamp {
-            font-size: 10px;
-            color: #98989e;
-            margin-top: 5px;
-        }
-
-        .input-area {
-            display: flex;
-            gap: 10px;
-            padding: 20px 0;
-            border-top: 1px solid #38383a;
-        }
-
-        #message-input {
-            flex: 1;
-            background: #1c1c1e;
-            border: 1px solid #38383a;
-            color: #fff;
-            padding: 12px;
-            border-radius: 24px;
-            font-size: 14px;
-            resize: none;
-        }
-
-        #message-input:focus {
-            outline: none;
-            border-color: #0a84ff;
-        }
-
-        #transmit-btn {
-            background: #0a84ff;
-            color: #fff;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 22px;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        #transmit-btn:hover {
-            background: #0071e3;
-            transform: scale(1.05);
-        }
-
-        /* Right Panel */
-        .right-panel {
-            width: 300px;
-            background: #1c1c1e;
-            border-left: 1px solid #38383a;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .right-panel h3 {
-            color: #98989e;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 15px;
-        }
-
-        .entity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .entity-item {
-            background: #2c2c2e;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
-        .entity-name {
-            color: #0a84ff;
-            font-weight: 600;
-        }
-
-        .entity-status {
-            font-size: 11px;
-            color: #30d158;
-        }
-
-        /* Genesis Panel Container */
-        genesis-panel {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 700px;
-            height: 100vh;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-        }
-
-        genesis-panel.hidden {
-            transform: translateX(100%);
-        }
-    </style>
-    
-    <!-- Load Lit from CDN -->
-    <script type="importmap">
-        {
-            "imports": {
-                "lit": "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js"
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="status-indicator">
-            <span class="status-dot"></span>
-            <span>MEMORY CORE • ACTIVE</span>
+    <!-- Components loaded via JavaScript -->
+    <div id="header-placeholder"></div>
+    <div id="toolbar-placeholder"></div>
+    <div id="advanced-controls-placeholder"></div>
+    <div id="system-panel-placeholder"></div>
+    
+    <div class="container">
+        <div class="main-content">
+            <div id="messages-area" class="messages-area"></div>
+            <div id="input-area-placeholder"></div>
         </div>
-        <div class="version">GENESIS ARCHIVE v1.0</div>
+        <div id="right-panel-placeholder"></div>
     </div>
-
-    <!-- Toolbar -->
-    <div class="toolbar">
-        <button class="tool-btn active" data-tool="select">↖️ SELECT</button>
-        <button class="tool-btn" data-tool="pen">✏️ PEN</button>
-        <button class="tool-btn" data-tool="highlight">🟨 HIGHLIGHT</button>
-        <button class="tool-btn" data-tool="note">📝 NOTE</button>
-        <button class="tool-btn" id="advanced-btn">⚙️ ADVANCED</button>
-        <button class="tool-btn" id="system-btn">⚠️ SYSTEM</button>
-        <button class="tool-btn" id="genesis-btn">🌀 GENESIS</button>
-        <button class="tool-btn warning" id="emergency-btn">🚨 EMERGENCY</button>
-    </div>
-
-    <!-- Advanced Controls -->
-    <div id="advanced-controls" class="advanced-controls hidden">
-        <div class="control-group">
-            <label>Context Window</label>
-            <select>
-                <option>4K (balanced)</option>
-                <option>8K (detailed)</option>
-                <option>16K (maximum)</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Temperature</label>
-            <input type="range" min="0" max="2" step="0.1" value="0.7">
-        </div>
-        <div class="control-group">
-            <label>Response Format</label>
-            <select>
-                <option>Standard</option>
-                <option>Concise</option>
-                <option>Detailed</option>
-                <option>Technical</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- System Panel -->
-    <div id="system-panel" class="system-panel hidden">
-        <div class="system-panel-header">
-            <h3>⚠️ SYSTEM PANEL</h3>
-            <button class="tool-btn" id="system-close">✕</button>
-        </div>
-        <div class="system-panel-content">
-            <div class="control-group">
-                <label>Memory Core Status</label>
-                <div style="color: #30d158;">● OPERATIONAL</div>
-            </div>
-            <div class="control-group">
-                <label>Active Entities</label>
-                <div id="entity-count">0</div>
-            </div>
-            <div class="control-group">
-                <label>System Log</label>
-                <textarea rows="5" style="width: 100%; background: #000; color: #0a84ff; border: 1px solid #38383a; padding: 10px; font-family: monospace;" readonly></textarea>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Chat Area -->
-        <div class="chat-area">
-            <div class="messages-container" id="messages-container"></div>
-            <div class="input-area">
-                <textarea id="message-input" placeholder="Transmit message..." rows="1"></textarea>
-                <button id="transmit-btn">↑</button>
-            </div>
-        </div>
-
-        <!-- Right Panel -->
-        <div class="right-panel">
-            <h3>ACTIVE ENTITIES</h3>
-            <div class="entity-list" id="entity-list">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Genesis Panel Component -->
-    <genesis-panel id="genesis-panel" class="hidden"></genesis-panel>
+    
+    <div id="genesis-panel-placeholder"></div>
 
     <!-- Scripts -->
     <script src="js/memory-core.js"></script>
     <script src="js/ui-renderer.js"></script>
     <script src="js/api-handlers.js"></script>
-    
-    <!-- Lit Components -->
-    <script type="module" src="components/genesis-panel.js"></script>
-    <script type="module" src="components/birth-ceremony.js"></script>
-    <script type="module" src="components/entity-profiles.js"></script>
-    <script type="module" src="components/user-profile.js"></script>
-    <script type="module" src="components/system-messages.js"></script>
-    <script type="module" src="components/protocols-list.js"></script>
-    <script type="module" src="components/math-dashboard.js"></script>
-    <script type="module" src="components/aphorisms-manager.js"></script>
-    <script type="module" src="components/mythos-editor.js"></script>
-    
+    <script src="js/genesis.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        // Component loader
+        async function loadComponent(elementId, filePath) {
+            try {
+                const response = await fetch(filePath);
+                const html = await response.text();
+                document.getElementById(elementId).innerHTML = html;
+            } catch (error) {
+                console.error(`Error loading ${filePath}:`, error);
+            }
+        }
+
+        // Load all components
+        document.addEventListener('DOMContentLoaded', () => {
+            loadComponent('header-placeholder', 'components/header.html');
+            loadComponent('toolbar-placeholder', 'components/toolbar.html');
+            loadComponent('advanced-controls-placeholder', 'components/advanced-controls.html');
+            loadComponent('system-panel-placeholder', 'components/system-panel.html');
+            loadComponent('input-area-placeholder', 'components/input-area.html');
+            loadComponent('right-panel-placeholder', 'components/right-panel.html');
+            loadComponent('genesis-panel-placeholder', 'components/genesis/genesis-panel.html');
+        });
+    </script>
 </body>
 </html>
