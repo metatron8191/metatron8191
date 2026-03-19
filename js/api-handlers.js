@@ -1,7 +1,5 @@
-// api-handlers.js
 const APIHandlers = {
-    // Grok API call (Responses API)
-    async callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey) {
+    async callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey, maxTokens) {
         const response = await fetch('https://api.x.ai/v1/responses', {
             method: 'POST',
             headers: {
@@ -15,7 +13,7 @@ const APIHandlers = {
                 previous_response_id: previousResponseId,
                 store: true,
                 temperature: 0.7,
-                max_output_tokens: 2000,
+                max_output_tokens: maxTokens || 2000,
                 stream: streamingEnabled
             })
         });
@@ -28,8 +26,7 @@ const APIHandlers = {
         return response;
     },
 
-    // DeepSeek API call
-    async callDeepSeek(model, messages, tools, streamingEnabled, deepseekApiKey) {
+    async callDeepSeek(model, messages, tools, streamingEnabled, deepseekApiKey, maxTokens) {
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -41,7 +38,7 @@ const APIHandlers = {
                 messages: messages,
                 tools: tools.length ? tools : undefined,
                 temperature: 0.7,
-                max_tokens: 2000,
+                max_tokens: maxTokens || 2000,
                 stream: streamingEnabled
             })
         });
@@ -54,7 +51,6 @@ const APIHandlers = {
         return response;
     },
 
-    // Image generation
     async generateImage(prompt, xaiApiKey) {
         const response = await fetch('https://api.x.ai/v1/images/generations', {
             method: 'POST',
@@ -79,7 +75,6 @@ const APIHandlers = {
         return data.data[0].url;
     },
 
-    // Parse Grok response
     parseGrokResponse(data) {
         if (!data || !data.output || !Array.isArray(data.output)) {
             throw new Error('Invalid API response structure');
@@ -94,7 +89,6 @@ const APIHandlers = {
         return textItem?.text || JSON.stringify(messageItem.content);
     },
 
-    // Parse DeepSeek response
     parseDeepSeekResponse(data) {
         if (!data.choices || !data.choices[0] || !data.choices[0].message) {
             throw new Error('Invalid API response structure');
