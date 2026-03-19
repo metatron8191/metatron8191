@@ -23,26 +23,34 @@
     
     <div id="genesis-panel-placeholder"></div>
 
-    <!-- Scripts (order matters!) -->
+    <!-- Scripts -->
     <script src="js/memory-core.js"></script>
     <script src="js/ui-renderer.js"></script>
     <script src="js/api-handlers.js"></script>
     <script src="js/genesis.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Component loader with initialization
+        // Get the current directory path
+        const CURRENT_PATH = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        
         async function loadComponent(elementId, filePath) {
             try {
-                const response = await fetch(filePath);
+                // Handle both absolute and relative paths
+                const fullPath = filePath.startsWith('/') ? filePath : CURRENT_PATH + filePath;
+                console.log(`Loading ${elementId} from ${fullPath}`);
+                
+                const response = await fetch(fullPath);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
                 const html = await response.text();
                 document.getElementById(elementId).innerHTML = html;
+                console.log(`✅ Loaded ${elementId}`);
             } catch (error) {
                 console.error(`Error loading ${filePath}:`, error);
-                document.getElementById(elementId).innerHTML = `<div style="color: #ff3b30; padding: 20px;">Error loading component: ${filePath}</div>`;
+                document.getElementById(elementId).innerHTML = `<div style="color: #ff3b30; padding: 20px;">Failed to load component</div>`;
             }
         }
 
-        // Load all components in parallel for speed
         document.addEventListener('DOMContentLoaded', async () => {
             await Promise.all([
                 loadComponent('header-placeholder', 'components/header.html'),
@@ -54,7 +62,6 @@
                 loadComponent('genesis-panel-placeholder', 'components/genesis/genesis-panel.html')
             ]);
             
-            // Dispatch event that components are loaded
             window.dispatchEvent(new Event('componentsLoaded'));
         });
     </script>
