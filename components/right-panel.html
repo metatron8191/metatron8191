@@ -1,0 +1,61 @@
+<div class="right-panel">
+    <div class="tab-nav">
+        <button class="tab-btn active" data-target="api-tab">🔑 API</button>
+        <button class="tab-btn" data-target="memory-tab">🧠 MEMORY</button>
+        <button class="tab-btn" data-target="tools-tab">🛠️ TOOLS</button>
+    </div>
+    <!-- API Tab -->
+    <div id="api-tab" class="tab-content">
+        <div class="panel-content">
+            <div class="api-section">
+                <div class="api-row">
+                    <span class="api-dot" id="xaiStatus"></span>
+                    <span class="api-key-display" id="xai-display">xAI not set</span>
+                    <button class="set-key-btn" onclick="promptForApiKey('xai')">SET</button>
+                </div>
+                <div class="api-row">
+                    <span class="api-dot" id="deepseekStatus"></span>
+                    <span class="api-key-display" id="deepseek-display">DS not set</span>
+                    <button class="set-key-btn" onclick="promptForApiKey('deepseek')">SET</button>
+                </div>
+            </div>
+            <div class="api-section">
+                <div class="api-row">
+                    <button id="newChainBtn" class="tool-btn small">🔄 NEW THREAD</button>
+                    <button id="exportChainBtn" class="tool-btn small">📋 EXPORT</button>
+                </div>
+            </div>
+            <div class="api-section">
+                <div class="api-row">
+                    <button id="toggle-memory" class="tool-btn small">📊 SHOW MEMORY</button>
+                    <button id="systemToggle" class="tool-btn small">⚙️ SYSTEM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Memory Tab -->
+    <div id="memory-tab" class="tab-content hidden">
+        <div class="panel-content">
+            <div class="memory-stats">
+                <span>L1 (Working): <span id="l1-count">0</span></span>
+                <span style="margin-left: 12px;">L2 (Active): <span id="l2-count">0</span></span>
+            </div>
+            <div id="memory-panel">
+                <!-- Memory items will be rendered here -->
+            </div>
+        </div>
+    </div>
+    <!-- Tools Tab -->
+    <div id="tools-tab" class="tab-content hidden">
+        <div class="panel-content">
+            <div style="color: #98989e; font-size: 12px; margin-bottom: 12px;">
+                <p>🌐 Web Search: Toggle to enable</p>
+                <p>𝕏 X Search: Toggle to enable</p>
+                <p>🎨 Image Gen: Generate images with Grok</p>
+                <p>⚡ Streaming: Real-time responses</p>
+                <p>🔮 Get DeepSeek: Alternative perspective</p>
+                <p>🎯 Response Style: Control output length/creativity</p>
+            </div>
+        </div>
+    </div>
+</div>
