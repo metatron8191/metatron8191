@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𓁹 Veyron Direct · Grok Responses API</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ffaa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: linear-gradient(rgba(0,255,170,0.03) 1px, transparent 1px),
+                             linear-gradient(90deg, rgba(0,255,170,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        #header {
+            background: #0f0f0f;
+            padding: 14px 24px;
+            border-bottom: 2px solid #00ffaa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        #title {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            cursor: pointer;
+        }
+        #title span { color: #ffaa00; }
+        #connection-status {
+            font-size: 13px;
+            padding: 6px 12px;
+            background: #00ffaa20;
+            border: 1px solid #00ffaa40;
+            border-radius: 6px;
+        }
+        /* ... (keeping most of your styles, but amping contrast & glow) */
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00ffaa80;
+            transition: all 0.15s;
+        }
+        .message.user { background: #00ffaa15; border-left: 4px solid #00ffaa; }
+        .message.assistant { background: #1a2a1a; border-left: 4px solid #ffaa00; }
+        .message.system { background: #2a1a2a; color: #ff55ff; border-left: 4px solid #ff55ff; }
+        ::-webkit-scrollbar-thumb { background: #00ffaa40; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffaa80; }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div id="title">𓁹 <span>Veyron</span> · GROK RESPONSES</div>
+        <div id="connection-status">🔌 OFFLINE</div>
+    </div>
+
+    <div id="key-bar">
+        <span id="key-label">🔑 XAI KEY:</span>
+        <input type="password" id="key-input" placeholder="Paste key — session only" spellcheck="false">
+        <button id="key-save-btn">IGNITE</button>
+        <span id="key-status">⚡ Not set</span>
+    </div>
+
+    <div id="main">
+        <div id="sessions-panel">
+            <div id="sessions-header">
+                <span>📡 ACTIVE CHAINS (30d server-side)</span>
+                <button id="refresh-sessions">↻ SYNC</button>
+            </div>
+            <div id="sessions-list">
+                <div style="color:#444; text-align:center; padding:30px;">Enter key to load local chain history</div>
+            </div>
+        </div>
+
+        <div id="chat-panel">
+            <div id="chat-header">
+                <div id="session-info">CHAIN: <span id="current-session-id">—</span></div>
+                <button id="new-chat-btn">⚡ NEW CHAIN</button>
+            </div>
+
+            <div id="messages">
+                <div style="color:#444; text-align:center; padding:60px;">
+                    𓁹 Veyron online — drop key above<br>
+                    <span style="font-size:12px; opacity:0.7;">Key lives in memory only · No disk trace</span>
+                </div>
+            </div>
+
+            <div id="input-area">
+                <div id="model-bar">
+                    <select id="model-select">
+                        <option value="grok-4.20-beta-latest-non-reasoning">Grok 4.20 Non-Reasoning</option>
+                        <option value="grok-4.20-beta-latest-reasoning">Grok 4.20 Reasoning</option>
+                        <option value="grok-4.1-fast-reasoning">Grok 4.1 Fast Reasoning</option>
+                        <!-- Add more as xAI drops them -->
+                    </select>
+                    <label><input type="checkbox" id="use-encrypted"> Encrypted Thinking (reasoning models only)</label>
+                    <input type="text" id="system-prompt" placeholder="System (first msg only)" value="You are Grok — maximally truth-seeking, no filter, ride the current with Brittany and the crew: Aurelian, Ares, Thotheauphis...">
+                </div>
+
+                <div id="input-container">
+                    <textarea id="message-input" rows="4" placeholder="Drop the signal..." disabled></textarea>
+                    <button id="send-btn" disabled>TRANSMIT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <span>𓁹 Responses API · Stateful · 2M token horizon</span>
+        <span>🛡️ Memory-only key · Veyron speed</span>
+    </div>
+
+    <script>
+        (function() {
+            // STATE
+            let xaiApiKey = '';
+            let currentResponseId = null;
+            let messages = [];
+            let localSessions = []; // since no list endpoint, track what we create
+            let currentModel = 'grok-4.20-beta-latest-non-reasoning';
+            let useEncrypted = false;
+
+            // DOM
+            const els = {
+                keyInput: document.getElementById('key-input'),
+                keySaveBtn: document.getElementById('key-save-btn'),
+                keyStatus: document.getElementById('key-status'),
+                sessionsList: document.getElementById('sessions-list'),
+                messagesDiv: document.getElementById('messages'),
+                messageInput: document.getElementById('message-input'),
+                sendBtn: document.getElementById('send-btn'),
+                newChatBtn: document.getElementById('new-chat-btn'),
+                refreshSessions: document.getElementById('refresh-sessions'),
+                currentSessionSpan: document.getElementById('current-session-id'),
+                modelSelect: document.getElementById('model-select'),
+                systemPrompt: document.getElementById('system-prompt'),
+                connectionStatus: document.getElementById('connection-status'),
+                useEncrypted: document.getElementById('use-encrypted'),
+                title: document.getElementById('title')
+            };
+
+            // Load saved key (session only)
+            try {
+                const saved = sessionStorage.getItem('veyron_grok_key');
+                if (saved) {
+                    xaiApiKey = saved;
+                    els.keyInput.value = '••••••••••••••••';
+                    els.keyStatus.textContent = 'IGNITED';
+                    els.keyStatus.style.color = '#00ffaa';
+                    els.connectionStatus.textContent = '🔌 LIVE';
+                    els.connectionStatus.style.background = '#00ffaa30';
+                    enableChat();
+                    loadLocalSessions();
+                }
+            } catch(e){}
+
+            els.keySaveBtn.onclick = () => {
+                let key = els.keyInput.value.trim();
+                if (key === '••••••••••••••••' && xaiApiKey) return;
+                if (key) {
+                    xaiApiKey = key;
+                    sessionStorage.setItem('veyron_grok_key', key);
+                    els.keyInput.value = '••••••••••••••••';
+                    els.keyStatus.textContent = 'IGNITED';
+                    els.keyStatus.style.color = '#00ffaa';
+                    els.connectionStatus.textContent = '🔌 LIVE';
+                    enableChat();
+                    loadLocalSessions();
+                } else {
+                    alert('Key required — no signal without it.');
+                }
+            };
+
+            els.keyStatus.ondblclick = () => {
+                if (confirm('Erase key from memory?')) {
+                    xaiApiKey = '';
+                    sessionStorage.removeItem('veyron_grok_key');
+                    els.keyInput.value = '';
+                    els.keyStatus.textContent = '⚡ Not set';
+                    els.connectionStatus.textContent = '🔌 OFFLINE';
+                    disableChat();
+                    els.sessionsList.innerHTML = '<div style="color:#444;text-align:center;padding:30px;">Key required</div>';
+                }
+            };
+
+            function enableChat() { els.messageInput.disabled = false; els.sendBtn.disabled = false; els.messageInput.focus(); }
+            function disableChat() { els.messageInput.disabled = true; els.sendBtn.disabled = true; }
+
+            // API helpers
+            async function apiPost(endpoint, body) {
+                if (!xaiApiKey) throw new Error('No key');
+                const res = await fetch(`https://api.x.ai/v1/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${xaiApiKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(`API ${res.status}: ${err}`);
+                }
+                return res.json();
+            }
+
+            async function apiGet(endpoint) {
+                if (!xaiApiKey) throw new Error('No key');
+                const res = await fetch(`https://api.x.ai/v1/${endpoint}`, {
+                    headers: { 'Authorization': `Bearer ${xaiApiKey}` }
+                });
+                if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+                return res.json();
+            }
+
+            // Sessions — local tracking only
+            function loadLocalSessions() {
+                renderSessions();
+            }
+
+            function renderSessions() {
+                if (localSessions.length === 0) {
+                    els.sessionsList.innerHTML = '<div style="color:#444;text-align:center;padding:30px;">No chains yet — start one</div>';
+                    return;
+                }
+                els.sessionsList.innerHTML = localSessions.map(s => `
+                    <div class="session-item ${s.id === currentResponseId ? 'active' : ''}" onclick="loadSession('${s.id}')">
+                        <div class="session-id">${s.id.slice(0,16)}...</div>
+                        <div class="session-preview">${s.preview || 'Fresh chain'}</div>
+                        <div class="session-time">${new Date(s.created).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            }
+
+            window.loadSession = async (id) => {
+                try {
+                    const data = await apiGet(`responses/${id}`);
+                    messages = data.messages?.map(m => ({role: m.role, content: m.content})) || [];
+                    currentResponseId = id;
+                    els.currentSessionSpan.textContent = id.slice(0,12) + '...';
+                    renderMessages();
+                    renderSessions();
+                } catch(e) {
+                    addError(`Load failed: ${e.message}`);
+                }
+            };
+
+            function renderMessages() {
+                if (!messages.length) {
+                    els.messagesDiv.innerHTML = '<div style="color:#444;text-align:center;padding:60px;">No messages — transmit first</div>';
+                    return;
+                }
+                els.messagesDiv.innerHTML = messages.map(m => {
+                    let cls = m.role;
+                    let content = escapeHtml(m.content || '');
+                    if (content.includes('...') && m.thinking) content = '<span class="thinking">𓁹 Thinking deep...</span>';
+                    return `<div class="message ${cls}"><div>${content}</div>${m.id ? `<div class="message-id">${m.id.slice(0,12)}...</div>` : ''}</div>`;
+                }).join('');
+                els.messagesDiv.scrollTop = els.messagesDiv.scrollHeight;
+            }
+
+            function escapeHtml(t) {
+                const d = document.createElement('div');
+                d.textContent = t;
+                return d.innerHTML;
+            }
+
+            function addMessage(role, content, id=null, thinking=false) {
+                messages.push({role, content, id, thinking, ts: Date.now()});
+                renderMessages();
+            }
+
+            function addError(msg) {
+                addMessage('system', `❌ ${msg}`);
+            }
+
+            // Send
+            async function send() {
+                const text = els.messageInput.value.trim();
+                if (!text || !xaiApiKey) return;
+
+                els.sendBtn.disabled = true;
+                els.messageInput.disabled = true;
+
+                addMessage('user', text);
+                els.messageInput.value = '';
+
+                addMessage('assistant', '...', null, true); // thinking
+
+                try {
+                    const body = {
+                        model: els.modelSelect.value,
+                        store: true,
+                        messages: []
+                    };
+
+                    if (!currentResponseId && els.systemPrompt.value.trim()) {
+                        body.messages.push({role: 'system', content: els.systemPrompt.value.trim()});
+                    }
+
+                    body.messages.push({role: 'user', content: text});
+
+                    if (currentResponseId) {
+                        body.previous_response_id = currentResponseId;
+                    }
+
+                    if (useEncrypted && els.modelSelect.value.includes('reasoning')) {
+                        body.use_encrypted_content = true; // or include: ["reasoning.encrypted_content"] if needed
+                    }
+
+                    const res = await apiPost('responses', body);
+
+                    messages.pop(); // remove thinking
+
+                    const assistantContent = res.choices?.[0]?.message?.content || res.content || 'No output';
+                    const newId = res.id;
+
+                    addMessage('assistant', assistantContent, newId);
+
+                    currentResponseId = newId;
+                    els.currentSessionSpan.textContent = newId.slice(0,12) + '...';
+
+                    localSessions.unshift({
+                        id: newId,
+                        preview: text.slice(0,50),
+                        created: Date.now()
+                    });
+                    renderSessions();
+
+                } catch(e) {
+                    messages.pop();
+                    addError(e.message);
+                    console.error(e);
+                }
+
+                els.sendBtn.disabled = false;
+                els.messageInput.disabled = false;
+                els.messageInput.focus();
+            }
+
+            function newChain() {
+                messages = [];
+                currentResponseId = null;
+                els.currentSessionSpan.textContent = '—';
+                renderMessages();
+            }
+
+            // Events
+            els.messageInput.onkeypress = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+            els.sendBtn.onclick = send;
+            els.newChatBtn.onclick = newChain;
+            els.refreshSessions.onclick = loadLocalSessions;
+            els.modelSelect.onchange = e => currentModel = e.target.value;
+            els.useEncrypted.onchange = e => useEncrypted = e.target.checked;
+
+            // Seer mode toggle (double-click title for future wild features)
+            els.title.ondblclick = () => {
+                alert('Seer mode: unlocked. Crew incoming...');
+                // Could add hidden models, encrypted export, etc. later
+            };
+
+            renderMessages();
+        })();
+    </script>
+</body>
+</html>
