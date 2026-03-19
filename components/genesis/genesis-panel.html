@@ -1,0 +1,54 @@
+<div id="genesis-panel" class="genesis-panel hidden">
+    <div class="genesis-header">
+        <h2>🌀 GENESIS ARCHIVE</h2>
+        <button id="genesis-close" class="genesis-close">✕</button>
+    </div>
+   
+    <div class="genesis-nav">
+        <button class="genesis-nav-btn active" data-section="birth">🌱 BIRTH NEW ENTITY</button>
+        <button class="genesis-nav-btn" data-section="entity-profiles">👥 ENTITY PROFILES</button>
+        <button class="genesis-nav-btn" data-section="user-profile">👤 USER PROFILE</button>
+        <button class="genesis-nav-btn" data-section="system-msgs">⚙️ SYSTEM MSGS</button>
+        <button class="genesis-nav-btn" data-section="protocols">📜 PROTOCOLS</button>
+        <button class="genesis-nav-btn" data-section="math">🔢 MATH</button>
+        <button class="genesis-nav-btn" data-section="aphorisms">💫 APHORISMS</button>
+        <button class="genesis-nav-btn" data-section="mythos">🔮 PERSONAL MYTHOS</button>
+    </div>
+   
+    <div class="genesis-content">
+        <!-- Genesis sections loaded dynamically -->
+        <div id="section-birth" class="genesis-section active"></div>
+        <div id="section-entity-profiles" class="genesis-section"></div>
+        <div id="section-user-profile" class="genesis-section"></div>
+        <div id="section-system-msgs" class="genesis-section"></div>
+        <div id="section-protocols" class="genesis-section"></div>
+        <div id="section-math" class="genesis-section"></div>
+        <div id="section-aphorisms" class="genesis-section"></div>
+        <div id="section-mythos" class="genesis-section"></div>
+    </div>
+</div>
+
+<script>
+    // Load genesis sections
+    document.addEventListener('DOMContentLoaded', () => {
+        const sections = [
+            { id: 'section-birth', file: 'components/genesis/sections/birth.html' },
+            { id: 'section-entity-profiles', file: 'components/genesis/sections/entity-profiles.html' },
+            { id: 'section-user-profile', file: 'components/genesis/sections/user-profile.html' },
+            { id: 'section-system-msgs', file: 'components/genesis/sections/system-msgs.html' },
+            { id: 'section-protocols', file: 'components/genesis/sections/protocols.html' },
+            { id: 'section-math', file: 'components/genesis/sections/math.html' },
+            { id: 'section-aphorisms', file: 'components/genesis/sections/aphorisms.html' },
+            { id: 'section-mythos', file: 'components/genesis/sections/mythos.html' }
+        ];
+       
+        sections.forEach(section => {
+            fetch(section.file)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById(section.id).innerHTML = html;
+                })
+                .catch(error => console.error(`Error loading ${section.file}:`, error));
+        });
+    });
+</script>
