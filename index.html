@@ -11,12 +11,12 @@
         <!-- TOP BAR: API KEYS + CHAINS STATUS -->
         <div class="top-bar">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="api-section" onclick="promptForApiKey('xai')">
+                <div class="api-section" onclick="window.promptForApiKey?.('xai')">
                     <div class="api-dot" id="xaiStatus"></div>
                     <span id="xai-display">xAI not set</span>
                 </div>
                 <div class="api-divider"></div>
-                <div class="api-section" onclick="promptForApiKey('deepseek')">
+                <div class="api-section" onclick="window.promptForApiKey?.('deepseek')">
                     <div class="api-dot" id="deepseekStatus"></div>
                     <span id="deepseek-display">DS not set</span>
                 </div>
@@ -149,9 +149,10 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts in correct order -->
     <script src="js/memory-core.js"></script>
     <script src="js/api-handlers.js"></script>
-    <script src="js/ui.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
