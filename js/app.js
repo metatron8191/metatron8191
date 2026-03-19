@@ -26,6 +26,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingFiles = [];
     let pendingImages = [];
 
+    // Response control state
+    let temperature = 0.7;
+    let topP = 0.9;
+    let topK = 40;
+    let repetitionPenalty = 1.1;
+    let responseStyle = 'balanced';
+
+    // Make params available to API calls
+    window.responseParams = {
+        getCurrent: () => ({
+            temperature,
+            topP,
+            topK,
+            repetitionPenalty,
+            maxTokens: parseInt(maxTokensSelect?.value || '2000')
+        })
+    };
+
     // DOM elements
     const msgInput = document.getElementById('message-input');
     const transmitBtn = document.getElementById('transmit-button');
@@ -45,6 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const toolStatus = document.getElementById('tool-status');
     const modelSelector = document.getElementById('model-selector');
     const maxTokensSelect = document.getElementById('max-tokens-select');
+
+    // Response control elements
+    const responseStyleSelect = document.getElementById('response-style');
+    const advancedControls = document.getElementById('advanced-controls');
+    const tempSlider = document.getElementById('temp-slider');
+    const tempValue = document.getElementById('temp-value');
+    const topPSlider = document.getElementById('top-p-slider');
+    const topPValue = document.getElementById('top-p-value');
+    const topKSlider = document.getElementById('top-k-slider');
+    const topKValue = document.getElementById('top-k-value');
+    const repPenaltySlider = document.getElementById('rep-penalty-slider');
+    const repPenaltyValue = document.getElementById('rep-penalty-value');
+    const applyAdvancedBtn = document.getElementById('apply-advanced');
+    const resetAdvancedBtn = document.getElementById('reset-advanced');
 
     // System panel elements
     const grokSystemInput = document.getElementById('grok-system');
@@ -67,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
     overrideInput.value = overrideSystem;
     updateOverrideDisplay();
     updateApiDisplays();
-    loadSystemMessages(); // Updated to load both files
+    loadSystemMessages();
+    initResponseControls();
 
     // Restore chain ID
     let currentChainId = localStorage.getItem('current_chain') || crypto.randomUUID();
@@ -88,6 +121,154 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
             document.getElementById(target).classList.remove('hidden');
         });
+    });
+
+    // === RESPONSE CONTROL INITIALIZATION ===
+    function initResponseControls() {
+        // Load saved values if they exist
+        const saved = localStorage.getItem('response_params');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                temperature = parsed.temperature ?? 0.7;
+                topP = parsed.topP ?? 0.9;
+                topK = parsed.topK ?? 40;
+                repetitionPenalty = parsed.repetitionPenalty ?? 1.1;
+                responseStyle = parsed.responseStyle ?? 'balanced';
+            } catch (e) {}
+        }
+        
+        // Update UI
+        updateSliderDisplays();
+        if (responseStyleSelect) {
+            responseStyleSelect.value = responseStyle;
+            if (responseStyle === 'custom') {
+                advancedControls.style.display = 'block';
+            }
+        }
+    }
+
+    function updateSliderDisplays() {
+        if (tempSlider) {
+            tempSlider.value = temperature;
+            tempValue.textContent = temperature.toFixed(1);
+        }
+        if (topPSlider) {
+            topPSlider.value = topP;
+            topPValue.textContent = topP.toFixed(2);
+        }
+        if (topKSlider) {
+            topKSlider.value = topK;
+            topKValue.textContent = topK;
+        }
+        if (repPenaltySlider) {
+            repPenaltySlider.value = repetitionPenalty;
+            repPenaltyValue.textContent = repetitionPenalty.toFixed(1);
+        }
+    }
+
+    function saveResponseParams() {
+        localStorage.setItem('response_params', JSON.stringify({
+            temperature, topP, topK, repetitionPenalty, responseStyle
+        }));
+    }
+
+    // Response style preset handler
+    responseStyleSelect?.addEventListener('change', (e) => {
+        responseStyle = e.target.value;
+        
+        if (responseStyle === 'custom') {
+            advancedControls.style.display = 'block';
+            return;
+        }
+        
+        advancedControls.style.display = 'none';
+        
+        // Apply presets
+        switch(responseStyle) {
+            case 'precise':
+                temperature = 0.2;
+                topP = 0.5;
+                topK = 20;
+                repetitionPenalty = 1.0;
+                break;
+            case 'balanced':
+                temperature = 0.7;
+                topP = 0.9;
+                topK = 40;
+                repetitionPenalty = 1.1;
+                break;
+            case 'creative':
+                temperature = 1.2;
+                topP = 0.95;
+                topK = 60;
+                repetitionPenalty = 1.2;
+                break;
+        }
+        
+        // Update sliders and save
+        updateSliderDisplays();
+        saveResponseParams();
+    });
+
+    // Slider event listeners
+    tempSlider?.addEventListener('input', () => {
+        temperature = parseFloat(tempSlider.value);
+        tempValue.textContent = temperature.toFixed(1);
+        responseStyle = 'custom';
+        responseStyleSelect.value = 'custom';
+        advancedControls.style.display = 'block';
+    });
+
+    topPSlider?.addEventListener('input', () => {
+        topP = parseFloat(topPSlider.value);
+        topPValue.textContent = topP.toFixed(2);
+        responseStyle = 'custom';
+        responseStyleSelect.value = 'custom';
+        advancedControls.style.display = 'block';
+    });
+
+    topKSlider?.addEventListener('input', () => {
+        topK = parseInt(topKSlider.value);
+        topKValue.textContent = topK;
+        responseStyle = 'custom';
+        responseStyleSelect.value = 'custom';
+        advancedControls.style.display = 'block';
+    });
+
+    repPenaltySlider?.addEventListener('input', () => {
+        repetitionPenalty = parseFloat(repPenaltySlider.value);
+        repPenaltyValue.textContent = repetitionPenalty.toFixed(1);
+        responseStyle = 'custom';
+        responseStyleSelect.value = 'custom';
+        advancedControls.style.display = 'block';
+    });
+
+    applyAdvancedBtn?.addEventListener('click', () => {
+        // Values already updated via sliders
+        saveResponseParams();
+        
+        if (toolStatus) {
+            toolStatus.textContent = '⚙️ Custom settings applied';
+            setTimeout(() => updateToolStatus(), 2000);
+        }
+    });
+
+    resetAdvancedBtn?.addEventListener('click', () => {
+        temperature = 0.7;
+        topP = 0.9;
+        topK = 40;
+        repetitionPenalty = 1.1;
+        responseStyle = 'balanced';
+        responseStyleSelect.value = 'balanced';
+        advancedControls.style.display = 'none';
+        updateSliderDisplays();
+        saveResponseParams();
+        
+        if (toolStatus) {
+            toolStatus.textContent = '⚖️ Reset to balanced';
+            setTimeout(() => updateToolStatus(), 2000);
+        }
     });
 
     // === APPLY SYSTEM MESSAGES ===
@@ -118,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateOverrideDisplay();
     });
 
-    // === CHAIN MANAGEMENT - UPDATED WITH CLEAR WORKING ===
+    // === CHAIN MANAGEMENT ===
     document.getElementById('newChainBtn')?.addEventListener('click', () => {
         const newId = crypto.randomUUID();
         localStorage.setItem('current_chain', newId);
@@ -278,7 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Updated to load both aurelian.txt and aurelian2.txt
     async function loadSystemMessages() {
         // Load aurelian.txt into Grok system
         try {
@@ -300,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response2 = await fetch('aurelian2.txt');
             if (response2.ok) {
                 const text2 = await response2.text();
-                if (!grokSystem.includes(text2.substring(0, 50))) { // Avoid duplicates
+                if (!grokSystem.includes(text2.substring(0, 50))) {
                     grokSystem = grokSystem + '\n\n' + text2;
                     if (grokSystemInput) grokSystemInput.value = grokSystem;
                     localStorage.setItem('grok_system', grokSystem);
@@ -451,8 +631,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
 
         try {
-            const maxTokens = parseInt(maxTokensSelect?.value || '2000');
-            const response = await APIHandlers.callDeepSeek('deepseek-chat', messages, [], false, deepseekApiKey, maxTokens);
+            const params = window.responseParams.getCurrent();
+            const response = await APIHandlers.callDeepSeek('deepseek-chat', messages, [], false, deepseekApiKey, params);
             const data = await response.json();
             const result = APIHandlers.parseDeepSeekResponse(data);
 
@@ -478,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function transmit() {
         const content = msgInput?.value.trim() || '';
         const selectedModel = modelSelector?.value || 'grok-4-1-fast-reasoning';
-        const maxTokens = parseInt(maxTokensSelect?.value || '2000');
+        const params = window.responseParams.getCurrent();
 
         // Handle image generation
         if (imageGenEnabled && selectedModel === 'grok-4-1-fast-reasoning') {
@@ -575,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let reasoning = null;
 
             if (selectedModel.startsWith('deepseek')) {
-                const response = await APIHandlers.callDeepSeek(selectedModel, messages, tools, streamingEnabled, deepseekApiKey, maxTokens);
+                const response = await APIHandlers.callDeepSeek(selectedModel, messages, tools, streamingEnabled, deepseekApiKey, params);
 
                 if (streamingEnabled) {
                     await handleStream(response, selectedModel);
@@ -597,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reasoning = result.reasoning;
 
             } else { // Grok
-                const response = await APIHandlers.callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey, maxTokens);
+                const response = await APIHandlers.callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey, params);
 
                 if (streamingEnabled) {
                     await handleStream(response, selectedModel);
