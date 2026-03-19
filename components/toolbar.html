@@ -1,0 +1,28 @@
+<div class="toolbar">
+    <button class="tool-btn" id="webSearchBtn" title="Enable web search">🌐 WEB</button>
+    <button class="tool-btn" id="xSearchBtn" title="Enable X search">𝕏 X</button>
+    <button class="tool-btn" id="imageGenBtn" title="Generate image">🎨 IMAGE GEN</button>
+    <button class="tool-btn" id="streamToggle" title="Toggle streaming">⚡ STREAM: OFF</button>
+   
+    <select id="max-tokens-select" class="tool-btn" style="min-width: 90px;">
+        <option value="500">🔹 Short (500)</option>
+        <option value="2000" selected>🔸 Medium (2000)</option>
+        <option value="4000">🔹 Long (4000)</option>
+    </select>
+   
+    <select id="response-style" class="tool-btn" style="min-width: 120px;">
+        <option value="precise">🎯 Precise</option>
+        <option value="balanced" selected>⚖️ Balanced</option>
+        <option value="creative">🎨 Creative</option>
+        <option value="custom">🔧 Custom...</option>
+    </select>
+   
+    <button class="tool-btn" id="getDeepSeekBtn" title="Get DeepSeek's perspective on last exchange">🔮 GET DEEPSEEK</button>
+   
+    <select id="model-selector" class="model-selector">
+        <option value="grok-4-1-fast-reasoning" selected>🤖 Grok Aurelian</option>
+        <option value="deepseek-chat">🔮 DeepSeek Aurelian</option>
+        <option value="deepseek-reasoner">🧠 DeepSeek Reasoner</option>
+    </select>
+    <span id="tool-status" class="tool-status"></span>
+</div>
