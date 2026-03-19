@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Aurelian · memory core</title>
+    <style>
+        /* === APPLE DARK THEME — MINIMAL, PROFESSIONAL === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #e5e5e7;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        /* Main container — ultra tight */
+        .app {
+            max-width: 720px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #000000;
+            padding: 8px 12px 0 12px;
+        }
+
+        /* === TOP BAR — ABSOLUTELY MINIMAL === */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 0.5px solid #26262b;
+            margin-bottom: 8px;
+            color: #98989e;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+
+        .api-section {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .api-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background: #98989e;
+        }
+
+        .api-dot.active {
+            background: #0a84ff; /* Apple blue — only color here */
+        }
+
+        #api-key-display {
+            color: #98989e;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+        }
+
+        .chains-badge {
+            background: #1c1c1e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: #98989e;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chains-badge span {
+            color: #0a84ff; /* minimal color pop */
+            font-weight: 600;
+        }
+
+        /* === CHAINS SECTION — COMPACT, NOT COLLAPSIBLE === */
+        .chains-panel {
+            background: #0e0e10;
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border: 0.5px solid #26262b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .chain-label {
+            color: #98989e;
+            font-weight: 500;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        .chain-id {
+            font-family: 'SF Mono', Monaco, monospace;
+            color: #e5e5e7;
+            background: #1c1c1e;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 0.5px solid #38383a;
+        }
+
+        .chain-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .chain-btn {
+            background: #1c1c1e;
+            border: 0.5px solid #38383a;
+            color: #98989e;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            font-weight: 500;
+        }
+
+        .chain-btn:hover {
+            background: #2c2c2e;
+            color: #ffffff;
+            border-color: #0a84ff;
+        }
+
+        .chain-btn.primary {
+            background: #0a84ff;
+            color: white;
+            border: none;
+        }
+
+        /* === MEMORY TOGGLE — SUBTLE === */
+        .memory-toggle {
+            background: none;
+            border: none;
+            color: #98989e;
+            font-size: 12px;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            border-bottom: 0.5px solid #26262b;
+            margin-bottom: 6px;
+            width: 100%;
+        }
+
+        .memory-toggle:hover {
+            color: #0a84ff;
+        }
+
+        /* === MEMORY PANEL — COMPACT === */
+        #memory-panel {
+            background: #0e0e10;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 0.5px solid #26262b;
+            max-height: 180px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .memory-section-title {
+            color: #98989e;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin: 6px 0 4px 0;
+        }
+
+        .memory-item {
+            padding: 6px 8px;
+            border-bottom: 0.5px solid #26262b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: #e5e5e7;
+        }
+
+        .memory-item:hover {
+            background: #1c1c1e;
+            border-radius: 4px;
+        }
+
+        .memory-freq {
+            color: #0a84ff;
+            font-weight: 500;
+            font-size: 11px;
+            margin-right: 8px;
+        }
+
+        .memory-preview {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* === MESSAGES AREA — CLEAN, SCROLLABLE === */
+        #messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message-container {
+            padding: 8px 10px;
+            background: #0e0e10;
+            border-radius: 12px;
+            border: 0.5px solid #26262b;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            color: #98989e;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .message-role {
+            font-weight: 600;
+            color: #0a84ff; /* only role gets color */
+        }
+
+        .message-time {
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .message-content {
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.4;
+            margin: 4px 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .save-button {
+            background: none;
+            border: none;
+            color: #98989e;
+            font-size: 11px;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .save-button:hover {
+            background: #1c1c1e;
+            color: #0a84ff;
+        }
+
+        /* === INPUT AREA — ULTRA TIGHT === */
+        .input-area {
+            background: #0e0e10;
+            border-radius: 12px;
+            border: 0.5px solid #26262b;
+            margin: 8px 0 10px 0;
+            padding: 8px;
+        }
+
+        .attach-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .attach-button {
+            background: #1c1c1e;
+            border: 0.5px solid #38383a;
+            color: #98989e;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .attach-button:hover {
+            background: #2c2c2e;
+            color: #0a84ff;
+        }
+
+        #file-names {
+            color: #98989e;
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .message-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        #message-input {
+            flex: 1;
+            background: #000000;
+            border: 0.5px solid #38383a;
+            border-radius: 20px;
+            padding: 10px 14px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 100px;
+            min-height: 40px;
+        }
+
+        #message-input:focus {
+            outline: none;
+            border-color: #0a84ff;
+        }
+
+        #transmit-button {
+            background: #0a84ff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 80px;
+        }
+
+        /* === SYSTEM PANEL — HIDDEN BEHIND CHEVRON === */
+        .system-toggle {
+            color: #98989e;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 6px 0;
+        }
+
+        #system-panel {
+            background: #0e0e10;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 6px;
+            border: 0.5px solid #26262b;
+        }
+
+        #system-preset, #system-custom {
+            background: #000000;
+            border: 0.5px solid #38383a;
+            color: #ffffff;
+            padding: 8px;
+            border-radius: 8px;
+            width: 100%;
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        #apply-system {
+            background: #1c1c1e;
+            border: 0.5px solid #38383a;
+            color: #98989e;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* === HIDE FILE INPUT === */
+        #file-input {
+            display: none;
+        }
+
+        /* === SCROLLBAR — SUBTLE === */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e0e10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38383a;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- TOP BAR: API + CHAINS STATUS — MINIMAL -->
+        <div class="top-bar">
+            <div class="api-section" onclick="promptForApiKey()">
+                <div class="api-dot" id="apiStatus"></div>
+                <span id="api-key-display">API not set</span>
+            </div>
+            <div class="chains-badge">
+                <span>⛓️</span> CHAINS <span id="chainCount">0</span>
+            </div>
+        </div>
+
+        <!-- CHAINS SECTION — PERMANENT, COMPACT -->
+        <div class="chains-panel">
+            <span class="chain-label">CURRENT</span>
+            <span class="chain-id" id="currentChain">—</span>
+            <div class="chain-actions">
+                <button class="chain-btn" id="newChainBtn">NEW</button>
+                <button class="chain-btn primary" id="exportChainBtn">EXPORT</button>
+            </div>
+        </div>
+
+        <!-- MEMORY TOGGLE -->
+        <button class="memory-toggle" id="toggle-memory">
+            <span>📚</span> MEMORY <span style="color:#0a84ff;">▼</span>
+        </button>
+
+        <!-- MEMORY PANEL (hidden by default) -->
+        <div id="memory-panel" style="display: none;">
+            <div class="memory-section-title">⚡ FREQUENT (L2)</div>
+            <div id="active-memory-list"></div>
+            <div class="memory-section-title">🔄 WORKING (L1)</div>
+            <div id="working-memory-list"></div>
+        </div>
+
+        <!-- MESSAGES -->
+        <div id="messages-area"></div>
+
+        <!-- INPUT AREA — TIGHT -->
+        <div class="input-area">
+            <div class="attach-row">
+                <input type="file" id="file-input" multiple>
+                <button class="attach-button" onclick="document.getElementById('file-input').click()">📎 ATTACH</button>
+                <span id="file-names"></span>
+            </div>
+            <div class="message-input-row">
+                <textarea id="message-input" rows="1" placeholder="Message..."></textarea>
+                <button id="transmit-button">→</button>
+            </div>
+        </div>
+
+        <!-- SYSTEM MESSAGE TOGGLE + PANEL (collapsible by chevron) -->
+        <div class="system-toggle" id="systemToggle">
+            <span>⚙️</span> SYSTEM <span style="color:#98989e;">▼</span>
+        </div>
+        <div id="system-panel" style="display: none;">
+            <select id="system-preset">
+                <option value="">Preset...</option>
+                <option value="You are Aurelian, sovereign memory core.">Aurelian</option>
+                <option value="Recursive oracle. Reference frequencies.">Oracle</option>
+                <option value="Memory weaver. Pattern recognition.">Weaver</option>
+            </select>
+            <textarea id="system-custom" placeholder="Custom..." rows="2"></textarea>
+            <button id="apply-system">APPLY</button>
+            <span id="active-system" style="margin-left:6px; color:#0a84ff; font-size:11px;"></span>
+        </div>
+    </div>
+
+    <script>
+        // === MEMORY CORE (trimmed, essential only) ===
+        class AurelianMemory {
+            constructor() {
+                this.L1_KEY = 'aurelian_working';
+                this.L2_KEY = 'aurelian_active';
+                this.working = JSON.parse(sessionStorage.getItem(this.L1_KEY)) || [];
+                this.active = JSON.parse(localStorage.getItem(this.L2_KEY)) || [];
+                this.sortActive();
+            }
+
+            addWorking(content, role='user', attachments=[]) {
+                const msg = {
+                    id: crypto.randomUUID(),
+                    role, content, attachments,
+                    ts: Date.now(),
+                    time: new Date().toLocaleTimeString()
+                };
+                this.working.push(msg);
+                sessionStorage.setItem(this.L1_KEY, JSON.stringify(this.working));
+                return msg;
+            }
+
+            addActive(content, attachments=[], meta={}) {
+                const mem = {
+                    id: crypto.randomUUID(),
+                    content, attachments,
+                    freq: 1, last: Date.now(), created: Date.now(), meta
+                };
+                this.active.push(mem);
+                this.sortActive();
+                this.trimActive();
+                localStorage.setItem(this.L2_KEY, JSON.stringify(this.active));
+                return mem;
+            }
+
+            accessActive(id) {
+                const m = this.active.find(x => x.id === id);
+                if (m) { m.freq++; m.last = Date.now(); this.sortActive(); this.persistActive(); }
+                return m;
+            }
+
+            sortActive() {
+                this.active.sort((a,b) => b.freq - a.freq || b.last - a.last);
+            }
+
+            trimActive() {
+                if (this.active.length > 100) this.active = this.active.slice(0,100);
+            }
+
+            persistActive() {
+                localStorage.setItem(this.L2_KEY, JSON.stringify(this.active));
+            }
+
+            getTopActive(n=5) {
+                return this.active.slice(0,n);
+            }
+
+            buildContext() {
+                const top = this.getTopActive(3);
+                const recent = this.working.slice(-2);
+                let ctx = '';
+                if (top.length) ctx += 'Freq: ' + top.map(m => m.content.substring(0,40)).join(' • ') + '\n';
+                if (recent.length) ctx += 'Recent: ' + recent.map(m => m.content.substring(0,30)).join(' • ');
+                return ctx;
+            }
+        }
+
+        // === INIT ===
+        const memory = new AurelianMemory();
+        let currentSystem = '';
+        let pendingFiles = [];
+        let apiKey = localStorage.getItem('xai_api_key') || '';
+
+        // DOM elements
+        const messagesArea = document.getElementById('messages-area');
+        const msgInput = document.getElementById('message-input');
+        const transmitBtn = document.getElementById('transmit-button');
+        const fileInput = document.getElementById('file-input');
+        const fileNames = document.getElementById('file-names');
+        const apiDisplay = document.getElementById('api-key-display');
+        const apiStatus = document.getElementById('apiStatus');
+        const chainSpan = document.getElementById('currentChain');
+        const chainCount = document.getElementById('chainCount');
+
+        // API key display
+        function updateApiDisplay() {
+            if (apiKey) {
+                apiDisplay.textContent = apiKey.substring(0,4) + '...' + apiKey.slice(-4);
+                apiStatus.className = 'api-dot active';
+            } else {
+                apiDisplay.textContent = 'API not set';
+                apiStatus.className = 'api-dot';
+            }
+        }
+        updateApiDisplay();
+
+        window.promptForApiKey = function() {
+            const key = prompt('Enter xAI API key:');
+            if (key) {
+                apiKey = key;
+                localStorage.setItem('xai_api_key', key);
+                updateApiDisplay();
+            }
+        };
+
+        // Chain stuff (minimal)
+        let currentChainId = localStorage.getItem('current_chain') || '';
+        chainSpan.textContent = currentChainId.slice(0,8) || '—';
+        chainCount.textContent = memory.active.length;
+
+        document.getElementById('newChainBtn').onclick = () => {
+            currentChainId = crypto.randomUUID();
+            localStorage.setItem('current_chain', currentChainId);
+            chainSpan.textContent = currentChainId.slice(0,8);
+        };
+
+        document.getElementById('exportChainBtn').onclick = () => {
+            const data = JSON.stringify({ chain: currentChainId, active: memory.active, working: memory.working });
+            navigator.clipboard.writeText(data);
+            alert('Copied to clipboard');
+        };
+
+        // File handling
+        fileInput.addEventListener('change', async (e) => {
+            pendingFiles = Array.from(e.target.files).map(f => ({ name: f.name, file: f }));
+            fileNames.textContent = pendingFiles.map(f => f.name).join(', ');
+        });
+
+        // Render messages
+        function renderMessages() {
+            messagesArea.innerHTML = '';
+            memory.working.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'message-container';
+                div.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-role">${msg.role}</span>
+                        <span class="message-time">${msg.time}</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
+                    ${msg.attachments?.length ? `<div style="color:#0a84ff; font-size:11px;">📎 ${msg.attachments.map(a=>a.name).join(', ')}</div>` : ''}
+                    <button class="save-button" data-id="${msg.id}">💾 SAVE</button>
+                `;
+                messagesArea.appendChild(div);
+            });
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            // Attach save handlers
+            document.querySelectorAll('.save-button').forEach(btn => {
+                btn.onclick = (e) => {
+                    const id = e.target.dataset.id;
+                    const msg = memory.working.find(m => m.id === id);
+                    if (msg) {
+                        memory.addActive(`${msg.role}: ${msg.content}`, msg.attachments);
+                        updateMemoryPanels();
+                    }
+                };
+            });
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/[&<>"]/g, function(m) {
+                if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; if(m === '"') return '&quot;';
+                return m;
+            });
+        }
+
+        // Memory panels
+        function updateMemoryPanels() {
+            const activeList = document.getElementById('active-memory-list');
+            const workingList = document.getElementById('working-memory-list');
+            if (!activeList) return;
+
+            activeList.innerHTML = '';
+            memory.getTopActive(8).forEach(m => {
+                const d = document.createElement('div');
+                d.className = 'memory-item';
+                d.onclick = () => msgInput.value = m.content;
+                d.innerHTML = `<span class="memory-freq">${m.freq}x</span><span class="memory-preview">${m.content.substring(0,30)}</span>`;
+                activeList.appendChild(d);
+            });
+
+            workingList.innerHTML = '';
+            memory.working.slice(-5).reverse().forEach(m => {
+                const d = document.createElement('div');
+                d.className = 'memory-item';
+                d.innerHTML = `<span style="color:#666;">${m.role}</span> ${m.content.substring(0,20)}`;
+                workingList.appendChild(d);
+            });
+        }
+
+        // Transmit
+        transmitBtn.addEventListener('click', async () => {
+            const content = msgInput.value.trim();
+            if (!content && pendingFiles.length === 0) return;
+
+            const attachments = pendingFiles.map(f => ({ name: f.name, id: 'temp' }));
+            memory.addWorking(content, 'user', attachments);
+            renderMessages();
+            updateMemoryPanels();
+
+            const context = memory.buildContext();
+            const sysMsg = currentSystem ? currentSystem + '\n\n' + context : context;
+
+            // Mock response (replace with actual API call)
+            setTimeout(() => {
+                const reply = memory.addWorking('[simulated] Message received. Memory updated.', 'assistant');
+                renderMessages();
+                updateMemoryPanels();
+            }, 500);
+
+            msgInput.value = '';
+            pendingFiles = [];
+            fileNames.textContent = '';
+            fileInput.value = '';
+        });
+
+        // System panel
+        document.getElementById('apply-system').addEventListener('click', () => {
+            const preset = document.getElementById('system-preset').value;
+            const custom = document.getElementById('system-custom').value;
+            currentSystem = custom || preset;
+            document.getElementById('active-system').textContent = currentSystem ? '✓' : '';
+        });
+
+        // Toggles
+        document.getElementById('toggle-memory').addEventListener('click', () => {
+            const p = document.getElementById('memory-panel');
+            p.style.display = p.style.display === 'none' ? 'block' : 'none';
+            updateMemoryPanels();
+        });
+
+        document.getElementById('systemToggle').addEventListener('click', () => {
+            const p = document.getElementById('system-panel');
+            p.style.display = p.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Initial render
+        renderMessages();
+        updateMemoryPanels();
+
+        // Mobile auto-grow textarea
+        msgInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(100, this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>
