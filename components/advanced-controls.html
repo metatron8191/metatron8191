@@ -1,0 +1,60 @@
+<div id="advanced-controls" style="display: none;">
+    <div class="controls-grid">
+        <!-- Temperature -->
+        <div class="control-item">
+            <div class="control-header">
+                <span class="control-label">Temperature</span>
+                <span id="temp-value" class="control-value">0.7</span>
+            </div>
+            <input type="range" id="temp-slider" min="0" max="2" step="0.1" value="0.7" class="control-slider">
+            <div class="control-footer">
+                <span>Precise</span>
+                <span>Balanced</span>
+                <span>Creative</span>
+            </div>
+        </div>
+       
+        <!-- Top P -->
+        <div class="control-item">
+            <div class="control-header">
+                <span class="control-label">Top P</span>
+                <span id="top-p-value" class="control-value">0.9</span>
+            </div>
+            <input type="range" id="top-p-slider" min="0" max="1" step="0.05" value="0.9" class="control-slider">
+            <div class="control-footer">
+                <span>Focused</span>
+                <span>Diverse</span>
+            </div>
+        </div>
+       
+        <!-- Top K -->
+        <div class="control-item">
+            <div class="control-header">
+                <span class="control-label">Top K</span>
+                <span id="top-k-value" class="control-value">40</span>
+            </div>
+            <input type="range" id="top-k-slider" min="0" max="100" value="40" class="control-slider">
+            <div class="control-footer">
+                <span>More options</span>
+            </div>
+        </div>
+       
+        <!-- Repetition Penalty -->
+        <div class="control-item">
+            <div class="control-header">
+                <span class="control-label">Repetition Penalty</span>
+                <span id="rep-penalty-value" class="control-value">1.1</span>
+            </div>
+            <input type="range" id="rep-penalty-slider" min="1" max="2" step="0.1" value="1.1" class="control-slider">
+            <div class="control-footer">
+                <span>None</span>
+                <span>Strong</span>
+            </div>
+        </div>
+    </div>
+   
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button id="reset-advanced" class="tool-btn small">RESET TO BALANCED</button>
+        <button id="apply-advanced" class="tool-btn small primary">APPLY CUSTOM</button>
+    </div>
+</div>
