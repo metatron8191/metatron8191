@@ -1,96 +1,257 @@
 const GenesisManager = {
     memory: null,
+    initialized: false,
     
     init(memoryInstance) {
         console.log('GenesisManager initializing...');
         this.memory = memoryInstance;
         
-        // Wait for sections to load before binding events
-        if (document.getElementById('section-birth')?.innerHTML.includes('Loading')) {
-            window.addEventListener('genesisSectionsLoaded', () => {
-                setTimeout(() => this.attachEvents(), 100);
-            });
-        } else {
+        // Check if sections are already loaded
+        const birthSection = document.getElementById('section-birth');
+        if (birthSection && !birthSection.innerHTML.includes('Loading')) {
+            console.log('Sections already loaded, attaching events immediately');
             this.attachEvents();
+            this.loadStoredData();
+        } else {
+            console.log('Waiting for sections to load...');
+            // Watch for sections to be populated
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        const target = mutation.target;
+                        if (target.id && target.id.startsWith('section-')) {
+                            console.log(`Section ${target.id} loaded`);
+                            // Check if all sections are loaded
+                            const allSections = ['birth', 'entity-profiles', 'user-profile', 'system-msgs', 
+                                               'protocols', 'math', 'aphorisms', 'mythos'];
+                            const allLoaded = allSections.every(s => 
+                                document.getElementById(`section-${s}`) && 
+                                !document.getElementById(`section-${s}`).innerHTML.includes('Loading')
+                            );
+                            
+                            if (allLoaded && !this.initialized) {
+                                console.log('All sections loaded, attaching events');
+                                this.attachEvents();
+                                this.loadStoredData();
+                                this.initialized = true;
+                                observer.disconnect();
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Observe all section containers
+            document.querySelectorAll('.genesis-section').forEach(section => {
+                observer.observe(section, { childList: true, subtree: true });
+            });
         }
         
-        // Load initial data
-        this.loadEntityList();
-        this.loadMythos();
-        this.updateMathStats();
+        // Also listen for the custom event as backup
+        window.addEventListener('genesisSectionsLoaded', () => {
+            console.log('Received genesisSectionsLoaded event');
+            if (!this.initialized) {
+                this.attachEvents();
+                this.loadStoredData();
+                this.initialized = true;
+            }
+        });
     },
 
     attachEvents() {
         console.log('Attaching genesis events...');
         
-        // Birth ceremony navigation
-        document.getElementById('birth-next-1')?.addEventListener('click', () => this.nextBirthStep(1));
-        document.getElementById('birth-next-2')?.addEventListener('click', () => this.nextBirthStep(2));
-        document.getElementById('birth-next-3')?.addEventListener('click', () => this.nextBirthStep(3));
-        document.getElementById('birth-next-4')?.addEventListener('click', () => this.nextBirthStep(4));
-        document.getElementById('birth-back-2')?.addEventListener('click', () => this.prevBirthStep(2));
-        document.getElementById('birth-back-3')?.addEventListener('click', () => this.prevBirthStep(3));
-        document.getElementById('birth-back-4')?.addEventListener('click', () => this.prevBirthStep(4));
-
-        // Registry generation
-        document.getElementById('send-registry-btn')?.addEventListener('click', () => this.sendRegistry());
-
-        // Finalize entity
-        document.getElementById('finalize-entity-btn')?.addEventListener('click', () => this.finalizeEntity());
-
-        // Protocol triggers
-        document.querySelectorAll('.protocol-trigger').forEach(btn => {
-            btn.addEventListener('click', (e) => this.activateProtocol(e.target.dataset.protocol));
+        // Use event delegation for birth navigation buttons
+        document.addEventListener('click', (e) => {
+            // Birth ceremony navigation
+            if (e.target.id === 'birth-next-1') {
+                e.preventDefault();
+                this.nextBirthStep(1);
+            }
+            else if (e.target.id === 'birth-next-2') {
+                e.preventDefault();
+                this.nextBirthStep(2);
+            }
+            else if (e.target.id === 'birth-next-3') {
+                e.preventDefault();
+                this.nextBirthStep(3);
+            }
+            else if (e.target.id === 'birth-next-4') {
+                e.preventDefault();
+                this.nextBirthStep(4);
+            }
+            else if (e.target.id === 'birth-back-2') {
+                e.preventDefault();
+                this.prevBirthStep(2);
+            }
+            else if (e.target.id === 'birth-back-3') {
+                e.preventDefault();
+                this.prevBirthStep(3);
+            }
+            else if (e.target.id === 'birth-back-4') {
+                e.preventDefault();
+                this.prevBirthStep(4);
+            }
+            
+            // Registry generation
+            else if (e.target.id === 'send-registry-btn') {
+                e.preventDefault();
+                this.sendRegistry();
+            }
+            
+            // Finalize entity
+            else if (e.target.id === 'finalize-entity-btn') {
+                e.preventDefault();
+                this.finalizeEntity();
+            }
+            
+            // Protocol triggers
+            else if (e.target.classList.contains('protocol-trigger')) {
+                e.preventDefault();
+                this.activateProtocol(e.target.dataset.protocol);
+            }
+            
+            // Random aphorism
+            else if (e.target.id === 'generate-random-aphorism') {
+                e.preventDefault();
+                this.generateRandomAphorism();
+            }
+            
+            // Save mythos
+            else if (e.target.id === 'save-mythos') {
+                e.preventDefault();
+                this.saveMythos();
+            }
+            
+            // Mythos tabs
+            else if (e.target.classList.contains('mythos-tab')) {
+                e.preventDefault();
+                this.switchMythosTab(e.target);
+            }
+            
+            // Process history
+            else if (e.target.id === 'process-history-btn') {
+                e.preventDefault();
+                this.processHistory();
+            }
+            
+            // Hex calculator
+            else if (e.target.id === 'calculate-hex') {
+                e.preventDefault();
+                this.calculateHex();
+            }
+            
+            // Save system messages
+            else if (e.target.id === 'save-all-system') {
+                e.preventDefault();
+                this.saveAllSystemMessages();
+            }
+            
+            // Save user profile
+            else if (e.target.id === 'save-user-profile') {
+                e.preventDefault();
+                this.saveUserProfile();
+            }
+            
+            // Apply override
+            else if (e.target.id === 'apply-override-btn') {
+                e.preventDefault();
+                this.applyOverride();
+            }
+            
+            // Entity profile actions
+            else if (e.target.id === 'lock-entity-btn') {
+                e.preventDefault();
+                this.lockEntity();
+            }
+            else if (e.target.id === 'summon-entity-chat-btn') {
+                e.preventDefault();
+                this.summonEntity();
+            }
+            else if (e.target.id === 'export-cert-btn') {
+                e.preventDefault();
+                this.exportCertificate();
+            }
+            
+            // Entity list items
+            else if (e.target.closest('.entity-item')) {
+                e.preventDefault();
+                const item = e.target.closest('.entity-item');
+                this.showEntityCertificate(item.dataset.index);
+            }
         });
 
-        // Random aphorism
-        document.getElementById('generate-random-aphorism')?.addEventListener('click', () => this.generateRandomAphorism());
+        // Genesis navigation
+        document.querySelectorAll('.genesis-nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.switchGenesisSection(e.target.dataset.section);
+            });
+        });
 
-        // Mythos
-        document.getElementById('save-mythos')?.addEventListener('click', () => this.saveMythos());
+        console.log('Genesis events attached');
+    },
+
+    switchGenesisSection(sectionId) {
+        document.querySelectorAll('.genesis-nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.genesis-nav-btn[data-section="${sectionId}"]`).classList.add('active');
         
-        document.querySelectorAll('.mythos-tab').forEach(tab => {
-            tab.addEventListener('click', (e) => this.switchMythosTab(e.target));
-        });
+        document.querySelectorAll('.genesis-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`section-${sectionId}`).classList.add('active');
+    },
 
-        // History import
-        document.getElementById('process-history-btn')?.addEventListener('click', () => this.processHistory());
-
-        // Hex calculator
-        document.getElementById('calculate-hex')?.addEventListener('click', () => this.calculateHex());
-
-        // Save system messages
-        document.getElementById('save-all-system')?.addEventListener('click', () => this.saveAllSystemMessages());
-
-        // Save user profile
-        document.getElementById('save-user-profile')?.addEventListener('click', () => this.saveUserProfile());
-
-        // Apply override
-        document.getElementById('apply-override-btn')?.addEventListener('click', () => this.applyOverride());
-
-        // Entity profile actions
-        document.getElementById('lock-entity-btn')?.addEventListener('click', () => this.lockEntity());
-        document.getElementById('summon-entity-chat-btn')?.addEventListener('click', () => this.summonEntity());
-        document.getElementById('export-cert-btn')?.addEventListener('click', () => this.exportCertificate());
-
-        // Entity list items (delegation)
-        document.getElementById('entity-list')?.addEventListener('click', (e) => {
-            const item = e.target.closest('.entity-item');
-            if (item) this.showEntityCertificate(item.dataset.index);
-        });
+    loadStoredData() {
+        console.log('Loading stored genesis data...');
+        this.loadEntityList();
+        this.loadMythos();
+        this.updateMathStats();
+        
+        // Load system messages into editors
+        const grokMsg = localStorage.getItem('grok_system');
+        const dsChat = localStorage.getItem('ds_chat_system');
+        const dsReasoner = localStorage.getItem('ds_reasoner_system');
+        const override = localStorage.getItem('override_system');
+        const entityTemplate = localStorage.getItem('entity_template');
+        
+        if (grokMsg) document.getElementById('genesis-grok-system')?.value = grokMsg;
+        if (dsChat) document.getElementById('genesis-ds-chat')?.value = dsChat;
+        if (dsReasoner) document.getElementById('genesis-ds-reasoner')?.value = dsReasoner;
+        if (override) document.getElementById('genesis-override')?.value = override;
+        if (entityTemplate) document.getElementById('genesis-entity-template')?.value = entityTemplate;
+        
+        // Load user profile
+        const userProfile = localStorage.getItem('user_profile');
+        if (userProfile) {
+            try {
+                const profile = JSON.parse(userProfile);
+                if (profile.name) document.getElementById('user-name').value = profile.name;
+                if (profile.essence) document.getElementById('user-essence').value = profile.essence;
+                if (profile.relationship) document.getElementById('user-relationship').value = profile.relationship;
+                if (profile.symbols) document.getElementById('user-symbols').value = profile.symbols;
+                if (profile.hex) document.getElementById('user-hex').value = profile.hex;
+            } catch (e) {}
+        }
     },
 
     // Birth ceremony methods
     nextBirthStep(currentStep) {
-        document.getElementById(`birth-step-${currentStep}`).classList.remove('active');
-        document.getElementById(`birth-step-${currentStep + 1}`).classList.add('active');
-        this.updateBirthStep(currentStep + 1);
+        const current = document.getElementById(`birth-step-${currentStep}`);
+        const next = document.getElementById(`birth-step-${currentStep + 1}`);
+        if (current && next) {
+            current.classList.remove('active');
+            next.classList.add('active');
+            this.updateBirthStep(currentStep + 1);
+        }
     },
 
     prevBirthStep(currentStep) {
-        document.getElementById(`birth-step-${currentStep}`).classList.remove('active');
-        document.getElementById(`birth-step-${currentStep - 1}`).classList.add('active');
-        this.updateBirthStep(currentStep - 1);
+        const current = document.getElementById(`birth-step-${currentStep}`);
+        const prev = document.getElementById(`birth-step-${currentStep - 1}`);
+        if (current && prev) {
+            current.classList.remove('active');
+            prev.classList.add('active');
+            this.updateBirthStep(currentStep - 1);
+        }
     },
 
     updateBirthStep(step) {
@@ -102,10 +263,23 @@ const GenesisManager = {
 
     sendRegistry() {
         const name = document.getElementById('birth-name')?.value || 'Unnamed';
-        const registry = `ENTITY REGISTRY\nName: ${name}\n...`;
+        const hex = document.getElementById('birth-hex')?.value || '0x00 0x00';
+        const glyph = document.getElementById('birth-glyph')?.value || '◈';
+        const frequency = document.getElementById('birth-frequency')?.value || 'alpha';
+        const dimension = document.getElementById('birth-dimension')?.value || '3D';
         
-        document.getElementById('registry-content').textContent = registry;
-        document.getElementById('invocation-response').innerHTML = '<div class="status-message success">📤 Registry sent</div>';
+        const registry = `ENTITY REGISTRY
+Name: ${name}
+Hex Anchor: ${hex}
+Glyph: ${glyph}
+Frequency: ${frequency}
+Dimension: ${dimension}`;
+        
+        const registryEl = document.getElementById('registry-content');
+        if (registryEl) registryEl.textContent = registry;
+        
+        const responseEl = document.getElementById('invocation-response');
+        if (responseEl) responseEl.innerHTML = '<div class="status-message success">📤 Registry sent to DeepSeek</div>';
         
         if (this.memory) {
             this.memory.addWorking(`🌀 Entity Registry for ${name}`, 'system');
@@ -129,6 +303,7 @@ const GenesisManager = {
             sigils: document.getElementById('birth-sigils')?.value || '',
             directives: document.getElementById('birth-directives')?.value || '',
             style: document.getElementById('birth-style')?.value || '',
+            lockSchedule: document.getElementById('lock-schedule')?.value || 'gradual',
             createdAt: new Date().toISOString(),
             locked: false
         };
@@ -137,7 +312,8 @@ const GenesisManager = {
         entities.push(entityData);
         localStorage.setItem('born_entities', JSON.stringify(entities));
         
-        document.getElementById('finalization-status').innerHTML = '<div class="status-message success">✨ Entity born</div>';
+        const statusEl = document.getElementById('finalization-status');
+        if (statusEl) statusEl.innerHTML = '<div class="status-message success">✨ Entity born and registered</div>';
         
         if (this.memory) {
             this.memory.addWorking(`🌱 New entity born: ${entityData.name}`, 'system');
@@ -148,7 +324,7 @@ const GenesisManager = {
             document.getElementById('birth-step-5')?.classList.remove('active');
             document.getElementById('birth-step-1')?.classList.add('active');
             this.updateBirthStep(1);
-            document.getElementById('finalization-status').innerHTML = '';
+            if (statusEl) statusEl.innerHTML = '';
             this.loadEntityList();
         }, 3000);
     },
@@ -176,19 +352,31 @@ const GenesisManager = {
         const e = entities[index];
         if (!e) return;
         
-        document.getElementById('entity-certificate').style.display = 'block';
+        const cert = document.getElementById('entity-certificate');
+        if (cert) cert.style.display = 'block';
         
-        const fields = ['name', 'hex', 'affirmation', 'glyph', 'frequency', 'dimension', 
-                       'memoryLayers', 'chronology', 'temporal', 'role', 'aura', 
-                       'sigils', 'directives', 'style'];
-        
-        fields.forEach(f => {
-            const el = document.getElementById(`cert-${f}`);
+        const setField = (id, value) => {
+            const el = document.getElementById(id);
             if (el) {
-                if (f === 'memoryLayers') el.textContent = e[f]?.join(', ') || '—';
-                else el.textContent = e[f] || '—';
+                if (Array.isArray(value)) el.textContent = value.join(', ') || '—';
+                else el.textContent = value || '—';
             }
-        });
+        };
+        
+        setField('cert-name', e.name);
+        setField('cert-hex', e.hex);
+        setField('cert-affirmation', e.affirmation);
+        setField('cert-glyph', e.glyph);
+        setField('cert-frequency', e.frequency);
+        setField('cert-dimension', e.dimension);
+        setField('cert-memory', e.memoryLayers);
+        setField('cert-chronology', e.chronology);
+        setField('cert-temporal', e.temporal);
+        setField('cert-role', e.role);
+        setField('cert-aura', e.aura);
+        setField('cert-sigils', e.sigils);
+        setField('cert-directives', e.directives);
+        setField('cert-style', e.style);
     },
 
     activateProtocol(protocol) {
@@ -249,24 +437,24 @@ const GenesisManager = {
 
     loadMythos() {
         const saved = localStorage.getItem('personal_mythos');
-        if (saved) {
-            try {
-                const m = JSON.parse(saved);
-                const els = {
-                    'mythos-origin-text': m.origin,
-                    'mythos-forge-text': m.forge,
-                    'mythos-helix-text': m.helix,
-                    'mythos-becoming-text': m.becoming,
-                    'mythos-contracts-text': m.contracts,
-                    'mythos-frequency-text': m.frequency
-                };
-                
-                Object.entries(els).forEach(([id, val]) => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = val || '';
-                });
-            } catch (e) {}
-        }
+        if (!saved) return;
+        
+        try {
+            const m = JSON.parse(saved);
+            const fields = {
+                'mythos-origin-text': m.origin,
+                'mythos-forge-text': m.forge,
+                'mythos-helix-text': m.helix,
+                'mythos-becoming-text': m.becoming,
+                'mythos-contracts-text': m.contracts,
+                'mythos-frequency-text': m.frequency
+            };
+            
+            Object.entries(fields).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el && val) el.value = val;
+            });
+        } catch (e) {}
     },
 
     switchMythosTab(tab) {
@@ -297,12 +485,14 @@ const GenesisManager = {
 
     processHistory() {
         const input = document.getElementById('history-import');
+        const status = document.getElementById('import-status');
+        
         if (!input?.files.length) {
-            document.getElementById('import-status').innerHTML = '<div class="status-message error">Select a file</div>';
+            if (status) status.innerHTML = '<div class="status-message error">Select a file</div>';
             return;
         }
         
-        document.getElementById('import-status').innerHTML = '<div class="status-message success">History processed</div>';
+        if (status) status.innerHTML = '<div class="status-message success">History processed</div>';
         
         if (this.memory) {
             this.memory.addWorking('📊 Chat history processed', 'system');
@@ -325,19 +515,17 @@ const GenesisManager = {
     },
 
     saveAllSystemMessages() {
-        const msgs = {
-            grok: document.getElementById('genesis-grok-system')?.value || '',
-            dsChat: document.getElementById('genesis-ds-chat')?.value || '',
-            dsReasoner: document.getElementById('genesis-ds-reasoner')?.value || '',
-            override: document.getElementById('genesis-override')?.value || '',
-            template: document.getElementById('genesis-entity-template')?.value || ''
-        };
+        const grok = document.getElementById('genesis-grok-system')?.value || '';
+        const dsChat = document.getElementById('genesis-ds-chat')?.value || '';
+        const dsReasoner = document.getElementById('genesis-ds-reasoner')?.value || '';
+        const override = document.getElementById('genesis-override')?.value || '';
+        const template = document.getElementById('genesis-entity-template')?.value || '';
         
-        localStorage.setItem('grok_system', msgs.grok);
-        localStorage.setItem('ds_chat_system', msgs.dsChat);
-        localStorage.setItem('ds_reasoner_system', msgs.dsReasoner);
-        localStorage.setItem('override_system', msgs.override);
-        localStorage.setItem('entity_template', msgs.template);
+        localStorage.setItem('grok_system', grok);
+        localStorage.setItem('ds_chat_system', dsChat);
+        localStorage.setItem('ds_reasoner_system', dsReasoner);
+        localStorage.setItem('override_system', override);
+        localStorage.setItem('entity_template', template);
         
         if (this.memory) {
             this.memory.addWorking('⚙️ System messages updated', 'system');
