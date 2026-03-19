@@ -1,0 +1,32 @@
+<div id="system-panel" class="hidden">
+    <div class="system-row">
+        <span class="system-label">Grok System</span>
+        <input type="text" id="grok-system" class="system-input" placeholder="System message for Grok">
+    </div>
+    <div class="system-row">
+        <span class="system-label">DS Chat System</span>
+        <input type="text" id="ds-chat-system" class="system-input" placeholder="System message for DeepSeek Chat">
+        <span id="ds-chat-status" class="status-badge active">active</span>
+    </div>
+    <div class="system-row">
+        <span class="system-label">DS Reasoner</span>
+        <input type="text" id="ds-reasoner-system" class="system-input" placeholder="System message for DeepSeek Reasoner">
+        <span id="ds-reasoner-status" class="status-badge active">active</span>
+    </div>
+    <div class="system-row">
+        <span class="system-label">Override</span>
+        <input type="text" id="override-system" class="system-input" placeholder="Override system message">
+        <select id="override-count" class="tool-btn small">
+            <option value="1">1 use</option>
+            <option value="3" selected>3 uses</option>
+            <option value="5">5 uses</option>
+            <option value="10">10 uses</option>
+        </select>
+    </div>
+    <div class="system-row">
+        <span class="system-label"></span>
+        <span id="override-remaining" class="status-badge inactive">inactive</span>
+        <button id="reset-override" class="tool-btn small">RESET OVERRIDE</button>
+        <button id="apply-system-all" class="tool-btn small primary">APPLY ALL</button>
+    </div>
+</div>
