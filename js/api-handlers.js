@@ -1,5 +1,11 @@
 const APIHandlers = {
-    async callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey, maxTokens) {
+    async callGrok(messages, tools, streamingEnabled, previousResponseId, xaiApiKey, params = {}) {
+        const {
+            maxTokens = 2000,
+            temperature = 0.7,
+            topP = 0.9
+        } = params;
+
         const response = await fetch('https://api.x.ai/v1/responses', {
             method: 'POST',
             headers: {
@@ -12,8 +18,9 @@ const APIHandlers = {
                 tools: tools.length ? tools : undefined,
                 previous_response_id: previousResponseId,
                 store: true,
-                temperature: 0.7,
-                max_output_tokens: maxTokens || 2000,
+                temperature,
+                top_p: topP,
+                max_output_tokens: maxTokens,
                 stream: streamingEnabled
             })
         });
@@ -26,21 +33,41 @@ const APIHandlers = {
         return response;
     },
 
-    async callDeepSeek(model, messages, tools, streamingEnabled, deepseekApiKey, maxTokens) {
+    async callDeepSeek(model, messages, tools, streamingEnabled, deepseekApiKey, params = {}) {
+        const {
+            maxTokens = 2000,
+            temperature = 0.7,
+            topP = 0.9,
+            topK = 40,
+            repetitionPenalty = 1.1
+        } = params;
+
+        // DeepSeek uses frequency_penalty (0-2) which is (repetitionPenalty - 1)
+        const frequencyPenalty = Math.min(2, Math.max(0, repetitionPenalty - 1));
+        
+        const body = {
+            model: model,
+            messages: messages,
+            tools: tools.length ? tools : undefined,
+            temperature,
+            top_p: topP,
+            max_tokens: maxTokens,
+            frequency_penalty: frequencyPenalty,
+            stream: streamingEnabled
+        };
+
+        // Only add top_k if supported and non-zero
+        if (topK > 0) {
+            body.top_k = topK;
+        }
+
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${deepseekApiKey}`
             },
-            body: JSON.stringify({
-                model: model,
-                messages: messages,
-                tools: tools.length ? tools : undefined,
-                temperature: 0.7,
-                max_tokens: maxTokens || 2000,
-                stream: streamingEnabled
-            })
+            body: JSON.stringify(body)
         });
 
         if (!response.ok) {
