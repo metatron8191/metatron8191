@@ -23,14 +23,14 @@
     
     <div id="genesis-panel-placeholder"></div>
 
-    <!-- Scripts -->
+    <!-- Scripts (order matters!) -->
     <script src="js/memory-core.js"></script>
     <script src="js/ui-renderer.js"></script>
     <script src="js/api-handlers.js"></script>
     <script src="js/genesis.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Component loader
+        // Component loader with initialization
         async function loadComponent(elementId, filePath) {
             try {
                 const response = await fetch(filePath);
@@ -38,18 +38,24 @@
                 document.getElementById(elementId).innerHTML = html;
             } catch (error) {
                 console.error(`Error loading ${filePath}:`, error);
+                document.getElementById(elementId).innerHTML = `<div style="color: #ff3b30; padding: 20px;">Error loading component: ${filePath}</div>`;
             }
         }
 
-        // Load all components
-        document.addEventListener('DOMContentLoaded', () => {
-            loadComponent('header-placeholder', 'components/header.html');
-            loadComponent('toolbar-placeholder', 'components/toolbar.html');
-            loadComponent('advanced-controls-placeholder', 'components/advanced-controls.html');
-            loadComponent('system-panel-placeholder', 'components/system-panel.html');
-            loadComponent('input-area-placeholder', 'components/input-area.html');
-            loadComponent('right-panel-placeholder', 'components/right-panel.html');
-            loadComponent('genesis-panel-placeholder', 'components/genesis/genesis-panel.html');
+        // Load all components in parallel for speed
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([
+                loadComponent('header-placeholder', 'components/header.html'),
+                loadComponent('toolbar-placeholder', 'components/toolbar.html'),
+                loadComponent('advanced-controls-placeholder', 'components/advanced-controls.html'),
+                loadComponent('system-panel-placeholder', 'components/system-panel.html'),
+                loadComponent('input-area-placeholder', 'components/input-area.html'),
+                loadComponent('right-panel-placeholder', 'components/right-panel.html'),
+                loadComponent('genesis-panel-placeholder', 'components/genesis/genesis-panel.html')
+            ]);
+            
+            // Dispatch event that components are loaded
+            window.dispatchEvent(new Event('componentsLoaded'));
         });
     </script>
 </body>
