@@ -1171,3 +1171,14 @@ body {
     border-radius: 8px;
     margin: 16px 0;
 }
+
+.message-content code {
+    font-family: monospace;
+    background: #0f0f1e;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.message-content strong { color: #d5c4ff; }
+.message-content em { font-style: italic; color: #c9b8ff; }
+.message-content ul { padding-left: 1.8em; margin: 0.6em 0; }
+.message-content a { color: #a88eff; text-decoration: underline; }
