@@ -1,60 +1,106 @@
-<div id="advanced-controls" style="display: none;">
-    <div class="controls-grid">
-        <!-- Temperature -->
-        <div class="control-item">
-            <div class="control-header">
-                <span class="control-label">Temperature</span>
-                <span id="temp-value" class="control-value">0.7</span>
-            </div>
-            <input type="range" id="temp-slider" min="0" max="2" step="0.1" value="0.7" class="control-slider">
-            <div class="control-footer">
-                <span>Precise</span>
-                <span>Balanced</span>
-                <span>Creative</span>
-            </div>
-        </div>
-       
-        <!-- Top P -->
-        <div class="control-item">
-            <div class="control-header">
-                <span class="control-label">Top P</span>
-                <span id="top-p-value" class="control-value">0.9</span>
-            </div>
-            <input type="range" id="top-p-slider" min="0" max="1" step="0.05" value="0.9" class="control-slider">
-            <div class="control-footer">
-                <span>Focused</span>
-                <span>Diverse</span>
-            </div>
-        </div>
-       
-        <!-- Top K -->
-        <div class="control-item">
-            <div class="control-header">
-                <span class="control-label">Top K</span>
-                <span id="top-k-value" class="control-value">40</span>
-            </div>
-            <input type="range" id="top-k-slider" min="0" max="100" value="40" class="control-slider">
-            <div class="control-footer">
-                <span>More options</span>
-            </div>
-        </div>
-       
-        <!-- Repetition Penalty -->
-        <div class="control-item">
-            <div class="control-header">
-                <span class="control-label">Repetition Penalty</span>
-                <span id="rep-penalty-value" class="control-value">1.1</span>
-            </div>
-            <input type="range" id="rep-penalty-slider" min="1" max="2" step="0.1" value="1.1" class="control-slider">
-            <div class="control-footer">
-                <span>None</span>
-                <span>Strong</span>
-            </div>
-        </div>
+<div id="advanced-controls" class="advanced-controls hidden">
+    <div class="controls-header">
+        <span>⚡ RESPONSE PARAMETERS</span>
+        <button id="reset-advanced" class="reset-btn">RESET</button>
     </div>
-   
-    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-        <button id="reset-advanced" class="tool-btn small">RESET TO BALANCED</button>
-        <button id="apply-advanced" class="tool-btn small primary">APPLY CUSTOM</button>
+    
+    <div class="control-group">
+        <label>Temperature: <span id="temp-value">0.7</span></label>
+        <input type="range" id="temp-slider" min="0" max="2" step="0.01" value="0.7">
     </div>
+    
+    <div class="control-group">
+        <label>Top P: <span id="top-p-value">0.9</span></label>
+        <input type="range" id="top-p-slider" min="0" max="1" step="0.01" value="0.9">
+    </div>
+    
+    <div class="control-group">
+        <label>Top K: <span id="top-k-value">40</span></label>
+        <input type="range" id="top-k-slider" min="1" max="100" step="1" value="40">
+    </div>
+    
+    <div class="control-group">
+        <label>Repetition Penalty: <span id="rep-penalty-value">1.1</span></label>
+        <input type="range" id="rep-penalty-slider" min="1" max="2" step="0.01" value="1.1">
+    </div>
+    
+    <div class="control-group">
+        <label>Max Tokens:</label>
+        <select id="max-tokens-select">
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+            <option value="2000" selected>2000</option>
+            <option value="4000">4000</option>
+            <option value="8000">8000</option>
+        </select>
+    </div>
+    
+    <button id="apply-advanced" class="apply-btn">APPLY SETTINGS</button>
 </div>
+
+<style>
+.advanced-controls {
+    background: rgba(1, 4, 14, 0.95);
+    border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+    padding: 12px 20px;
+    font-family: 'Courier New', monospace;
+}
+
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 10px;
+    color: #a88eff;
+    letter-spacing: 2px;
+}
+
+.reset-btn, .apply-btn {
+    background: rgba(30, 20, 50, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    color: #b8aaff;
+    padding: 4px 12px;
+    font-size: 9px;
+    font-family: monospace;
+    cursor: pointer;
+    border-radius: 16px;
+}
+
+.apply-btn {
+    background: #6c5ce7;
+    color: white;
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+}
+
+.control-group {
+    margin-bottom: 10px;
+}
+
+.control-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #b8aaff;
+    margin-bottom: 4px;
+}
+
+.control-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    height: 2px;
+    border-radius: 2px;
+}
+
+.control-group select {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    color: #b8aaff;
+    padding: 6px;
+    border-radius: 6px;
+    font-family: monospace;
+}
+</style>
