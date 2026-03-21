@@ -1,4 +1,64 @@
-<div id="threads-sidebar" class="threads-sidebar">
+<!-- Threads Sidebar -->
+<div id="threads-sidebar">
+    <div class="threads-header">
+        <h3>⟊ THREADS</h3>
+        <button id="new-thread-btn-sidebar" class="new-thread-btn">+ NEW</button>
+    </div>
+    <div id="thread-list" class="thread-list">
+        <div style="padding: 20px; text-align: center; color: #6c5ce7;">
+            No threads yet<br>Click + NEW to start
+        </div>
+    </div>
+</div>
+<div id="thread-overlay" class="thread-overlay"></div>
+
+<script>
+    (function() {
+        // Wait for components to load
+        const initThreadsPanel = () => {
+            const sidebar = document.getElementById('threads-sidebar');
+            const overlay = document.getElementById('thread-overlay');
+            
+            if (!sidebar) return;
+            
+            // Function to open sidebar
+            window.openThreadsPanel = function() {
+                if (sidebar) sidebar.classList.add('open');
+                if (overlay) overlay.classList.add('open');
+            };
+            
+            // Function to close sidebar
+            window.closeThreadsPanel = function() {
+                if (sidebar) sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('open');
+            };
+            
+            // Close on overlay click
+            if (overlay) {
+                overlay.addEventListener('click', window.closeThreadsPanel);
+            }
+            
+            // New thread button
+            const newBtn = document.getElementById('new-thread-btn-sidebar');
+            if (newBtn) {
+                newBtn.addEventListener('click', () => {
+                    if (window.createNewThread) {
+                        window.createNewThread();
+                    }
+                    window.closeThreadsPanel();
+                });
+            }
+            
+            console.log('✅ Threads panel initialized');
+        };
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initThreadsPanel);
+        } else {
+            initThreadsPanel();
+        }
+    })();
+</script><div id="threads-sidebar" class="threads-sidebar">
     <div class="threads-header">
         <h3>⟊ THREADS</h3>
         <button id="sidebar-new-thread" class="new-thread-btn">+ NEW</button>
