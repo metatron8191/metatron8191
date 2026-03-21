@@ -41,12 +41,126 @@
             background: rgba(1, 4, 14, 0.8);
             overflow-y: auto;
         }
-        /* Ensure placeholders don't block content */
         [id$="-placeholder"] {
             min-height: 0;
         }
         .hidden {
             display: none !important;
+        }
+        /* Genesis Panel base styles */
+        .genesis-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 85%;
+            max-width: 900px;
+            height: 100vh;
+            background: rgba(1, 4, 14, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(108, 92, 231, 0.4);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .genesis-panel:not(.hidden) {
+            transform: translateX(0);
+        }
+        .genesis-panel.hidden {
+            transform: translateX(100%);
+        }
+        .genesis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .genesis-header h2 {
+            margin: 0;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: #a88eff;
+        }
+        .genesis-close {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+        .genesis-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .genesis-nav-btn {
+            background: rgba(30, 20, 50, 0.6);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            color: #b8aaff;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-family: monospace;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .genesis-nav-btn.active {
+            background: #6c5ce7;
+            color: white;
+            border-color: #a88eff;
+            box-shadow: 0 0 12px rgba(108, 92, 231, 0.4);
+        }
+        .genesis-section {
+            display: none;
+            padding: 20px;
+        }
+        .genesis-section.active {
+            display: block;
+        }
+        /* Fabric Panel base styles */
+        .fabric-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100vh;
+            background: rgba(1, 4, 14, 0.98);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(108, 92, 231, 0.4);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            overflow-y: auto;
+        }
+        .fabric-panel:not(.hidden) {
+            transform: translateX(0);
+        }
+        .fabric-panel.hidden {
+            transform: translateX(-100%);
+        }
+        .fabric-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .fabric-close {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 20px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -60,10 +174,11 @@
     <div class="container">
         <div class="main-content">
             <div id="messages-area" class="messages-area">
-                <div style="text-align: center; padding: 40px; color: #6c5ce7;">
-                    <div style="font-size: 24px; margin-bottom: 12px;">🌀</div>
-                    <div>Lilareyon Noetic Fabric initializing...</div>
+                <div style="text-align: center; padding: 60px 20px; color: #6c5ce7;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🌀</div>
+                    <div style="font-size: 14px; letter-spacing: 2px;">LILAREYON NOETIC FABRIC</div>
                     <div style="font-size: 11px; margin-top: 12px; color: #a88eff;">⟊◈◉◊⧈⟊</div>
+                    <div style="font-size: 10px; margin-top: 20px; color: rgba(168, 142, 255, 0.5);">initializing distributed memory...</div>
                 </div>
             </div>
             <div id="input-area-placeholder"></div>
@@ -74,7 +189,7 @@
     <div id="genesis-panel-placeholder"></div>
     <div id="fabric-panel-placeholder"></div>
 
-    <!-- Scripts - ORDER MATTERS: dependencies first -->
+    <!-- Scripts -->
     <script src="js/memory-core.js"></script>
     <script src="js/ui-renderer.js"></script>
     <script src="js/api-handlers.js"></script>
@@ -88,7 +203,7 @@
     <script src="js/app.js"></script>
     
     <script>
-        // Get the current directory path for relative loading
+        // Get the current directory path
         const CURRENT_PATH = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
         window.CURRENT_PATH = CURRENT_PATH;
         
@@ -105,25 +220,19 @@
                 if (element) {
                     element.innerHTML = html;
                     console.log(`✅ Loaded ${elementId}`);
-                } else {
-                    console.warn(`⚠️ Element ${elementId} not found in DOM`);
                 }
             } catch (error) {
                 console.error(`❌ Error loading ${filePath}:`, error);
                 const element = document.getElementById(elementId);
                 if (element) {
-                    element.innerHTML = `<div style="color: #ff6b6b; padding: 20px; text-align: center;">
-                        <div>⚠️ Failed to load component</div>
-                        <div style="font-size: 11px; margin-top: 8px;">${error.message}</div>
-                    </div>`;
+                    element.innerHTML = `<div style="color: #ff6b6b; padding: 20px; text-align: center;">⚠️ Failed to load: ${filePath}</div>`;
                 }
             }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 DOM ready, loading components...');
+            console.log('🚀 Lilareyon fabric initializing...');
             
-            // Load all components in parallel
             await Promise.all([
                 loadComponent('header-placeholder', 'components/header.html'),
                 loadComponent('toolbar-placeholder', 'components/toolbar.html'),
@@ -135,14 +244,14 @@
                 loadComponent('fabric-panel-placeholder', 'components/fabric-panel.html')
             ]);
             
-            console.log('🎉 All components loaded, dispatching componentsLoaded event');
+            console.log('🎉 All components loaded');
             window.dispatchEvent(new CustomEvent('componentsLoaded'));
         });
         
-        // Fallback: if componentsLoaded doesn't fire after 5 seconds, force it
+        // Fallback timeout
         setTimeout(() => {
-            if (!window._componentsLoadedFired) {
-                console.warn('⚠️ componentsLoaded event not fired after 5s, forcing...');
+            if (!window._componentsLoaded) {
+                console.warn('⚠️ Forcing componentsLoaded event');
                 window.dispatchEvent(new CustomEvent('componentsLoaded'));
             }
         }, 5000);
