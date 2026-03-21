@@ -1,32 +1,326 @@
-<div id="system-panel" class="hidden">
-    <div class="system-row">
-        <span class="system-label">Grok System</span>
-        <input type="text" id="grok-system" class="system-input" placeholder="System message for Grok">
+<div id="system-panel" class="system-panel hidden">
+    <div class="system-header">
+        <h3>⚙️ SYSTEM CONFIGURATION</h3>
+        <button id="close-system" class="close-btn">✕</button>
     </div>
-    <div class="system-row">
-        <span class="system-label">DS Chat System</span>
-        <input type="text" id="ds-chat-system" class="system-input" placeholder="System message for DeepSeek Chat">
-        <span id="ds-chat-status" class="status-badge active">active</span>
+    
+    <div class="system-tabs">
+        <button class="sys-tab active" data-tab="api">🔑 API KEYS</button>
+        <button class="sys-tab" data-tab="models">🤖 MODEL SYSTEMS</button>
+        <button class="sys-tab" data-tab="memory">🧠 MEMORY</button>
     </div>
-    <div class="system-row">
-        <span class="system-label">DS Reasoner</span>
-        <input type="text" id="ds-reasoner-system" class="system-input" placeholder="System message for DeepSeek Reasoner">
-        <span id="ds-reasoner-status" class="status-badge active">active</span>
+    
+    <div id="sys-api" class="sys-content active">
+        <div class="api-section">
+            <label>xAI (Grok)</label>
+            <div class="api-row">
+                <span id="xai-display" class="api-key-display">not set</span>
+                <button class="set-key-btn" data-provider="xai">SET</button>
+            </div>
+            <div class="api-status">
+                <span id="xaiStatus" class="status-badge"></span>
+            </div>
+        </div>
+        
+        <div class="api-section">
+            <label>DeepSeek</label>
+            <div class="api-row">
+                <span id="deepseek-display" class="api-key-display">not set</span>
+                <button class="set-key-btn" data-provider="deepseek">SET</button>
+            </div>
+            <div class="api-status">
+                <span id="deepseekStatus" class="status-badge"></span>
+            </div>
+        </div>
+        
+        <div class="api-section">
+            <label>Anthropic (Claude)</label>
+            <div class="api-row">
+                <span id="claude-display" class="api-key-display">not set</span>
+                <button class="set-key-btn" data-provider="anthropic">SET</button>
+            </div>
+            <div class="api-status">
+                <span id="claudeStatus" class="status-badge"></span>
+            </div>
+        </div>
     </div>
-    <div class="system-row">
-        <span class="system-label">Override</span>
-        <input type="text" id="override-system" class="system-input" placeholder="Override system message">
-        <select id="override-count" class="tool-btn small">
-            <option value="1">1 use</option>
-            <option value="3" selected>3 uses</option>
-            <option value="5">5 uses</option>
-            <option value="10">10 uses</option>
-        </select>
+    
+    <div id="sys-models" class="sys-content hidden">
+        <div class="model-section">
+            <label>GROK SYSTEM MESSAGE</label>
+            <textarea id="grok-system" rows="4" placeholder="System prompt for Grok..."></textarea>
+        </div>
+        
+        <div class="model-section">
+            <label>DEEPSEEK CHAT SYSTEM</label>
+            <textarea id="ds-chat-system" rows="4" placeholder="System prompt for DeepSeek Chat..."></textarea>
+        </div>
+        
+        <div class="model-section">
+            <label>DEEPSEEK REASONER</label>
+            <textarea id="ds-reasoner-system" rows="4" placeholder="System prompt for DeepSeek Reasoner..."></textarea>
+        </div>
+        
+        <div class="model-section">
+            <label>CLAUDESystem</label>
+            <textarea id="claude-system" rows="4" placeholder="System prompt for Claude..."></textarea>
+        </div>
+        
+        <div class="override-section">
+            <label>OVERRIDE MODE</label>
+            <textarea id="override-system" rows="3" placeholder="Temporary override system message..."></textarea>
+            <div class="override-controls">
+                <select id="override-count">
+                    <option value="1">1 use</option>
+                    <option value="3" selected>3 uses</option>
+                    <option value="5">5 uses</option>
+                    <option value="10">10 uses</option>
+                </select>
+                <span id="override-remaining" class="override-status">inactive</span>
+                <button id="reset-override" class="small-btn">RESET</button>
+            </div>
+        </div>
+        
+        <button id="apply-system-all" class="apply-all-btn">SAVE ALL SYSTEM MESSAGES</button>
     </div>
-    <div class="system-row">
-        <span class="system-label"></span>
-        <span id="override-remaining" class="status-badge inactive">inactive</span>
-        <button id="reset-override" class="tool-btn small">RESET OVERRIDE</button>
-        <button id="apply-system-all" class="tool-btn small primary">APPLY ALL</button>
+    
+    <div id="sys-memory" class="sys-content hidden">
+        <div class="memory-stats">
+            <div class="stat">
+                <span class="stat-label">WORKING MEMORY</span>
+                <span id="memory-working-count" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">ACTIVE ARCHIVE</span>
+                <span id="memory-active-count" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">TOTAL TOKENS</span>
+                <span id="memory-total-tokens" class="stat-value">0</span>
+            </div>
+        </div>
+        
+        <div class="memory-actions">
+            <button id="clear-memory" class="danger-btn">CLEAR WORKING MEMORY</button>
+            <button id="compact-memory" class="warning-btn">COMPACT MEMORY</button>
+        </div>
     </div>
 </div>
+
+<style>
+.system-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100vh;
+    background: rgba(1, 4, 14, 0.98);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(108, 92, 231, 0.4);
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+}
+
+.system-panel:not(.hidden) {
+    transform: translateX(0);
+}
+
+.system-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+    position: sticky;
+    top: 0;
+    background: rgba(1, 4, 14, 0.95);
+}
+
+.system-header h3 {
+    margin: 0;
+    font-size: 12px;
+    color: #a88eff;
+    letter-spacing: 2px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.system-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+    padding: 0 16px;
+}
+
+.sys-tab {
+    background: none;
+    border: none;
+    color: #8a8a9e;
+    padding: 12px 16px;
+    font-size: 10px;
+    font-family: monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sys-tab.active {
+    color: #a88eff;
+    border-bottom: 2px solid #6c5ce7;
+}
+
+.sys-content {
+    padding: 20px;
+}
+
+.api-section, .model-section, .override-section {
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+    padding-bottom: 16px;
+}
+
+.api-section label, .model-section label, .override-section label {
+    display: block;
+    font-size: 9px;
+    color: #a88eff;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.api-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.api-key-display {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-family: monospace;
+    color: #b8aaff;
+}
+
+.set-key-btn, .small-btn {
+    background: rgba(108, 92, 231, 0.3);
+    border: 1px solid #6c5ce7;
+    color: #a88eff;
+    padding: 6px 12px;
+    font-size: 9px;
+    font-family: monospace;
+    cursor: pointer;
+    border-radius: 16px;
+}
+
+textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    color: #e2e2ff;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 10px;
+    resize: vertical;
+}
+
+.override-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.override-status {
+    font-size: 9px;
+    color: #ffaa66;
+}
+
+.apply-all-btn {
+    width: 100%;
+    background: #6c5ce7;
+    border: none;
+    color: white;
+    padding: 12px;
+    border-radius: 24px;
+    font-family: monospace;
+    font-size: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.memory-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: #a88eff;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.memory-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.danger-btn, .warning-btn {
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.danger-btn {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
+}
+
+.warning-btn {
+    background: rgba(255, 170, 102, 0.2);
+    color: #ffaa66;
+    border: 1px solid #ffaa66;
+}
+
+.status-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #666;
+}
+
+.status-badge.active {
+    background: #48bb78;
+    box-shadow: 0 0 6px #48bb78;
+}
+</style>
