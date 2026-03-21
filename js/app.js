@@ -1,5 +1,5 @@
 // app.js - Lilareyon Noetic Fabric v∞
-// Complete with all button handlers wired
+// Complete working version with all buttons and panels functional
 
 // ============================================================================
 // GLOBAL STATE
@@ -84,7 +84,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         bindDomElements();
         wireAllButtons();
+        wireSystemPanelButtons();
+        wireRightPanelTabs();
         initializeValues();
+        updateMemoryStats();
         
         // Initialize Fabric
         try {
@@ -131,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.UIRenderer.updateMemoryPanels();
         }
         
-        if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+        updateRightPanelMemoryLists();
         
         console.log('✅ All systems ready');
     });
@@ -211,11 +214,11 @@ function bindDomElements() {
 
 
 // ============================================================================
-// WIRE ALL BUTTONS
+// WIRE ALL MAIN BUTTONS
 // ============================================================================
 
 function wireAllButtons() {
-    console.log('🔌 Wiring buttons...');
+    console.log('🔌 Wiring main buttons...');
     
     // ========== PANEL TOGGLES ==========
     
@@ -261,30 +264,16 @@ function wireAllButtons() {
         console.log('✓ System button wired');
     }
     
-    const systemCloseBtn = document.getElementById('close-system');
-    if (systemCloseBtn && systemPanel) {
-        systemCloseBtn.onclick = () => systemPanel.classList.add('hidden');
-    }
-    
     if (toggleMemoryBtn) {
         toggleMemoryBtn.onclick = (e) => {
             e.preventDefault();
             const memoryPanelContent = document.getElementById('memory-panel-content');
             if (memoryPanelContent) {
                 memoryPanelContent.classList.toggle('hidden');
-                if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+                updateRightPanelMemoryLists();
             }
         };
     }
-    
-    // ========== API KEY BUTTONS ==========
-    document.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.classList && target.classList.contains('set-key-btn')) {
-            const provider = target.dataset.provider;
-            promptForApiKey(provider);
-        }
-    });
     
     // ========== TOOL BUTTONS ==========
     
@@ -403,41 +392,6 @@ function wireAllButtons() {
         };
     }
     
-    // ========== SYSTEM MESSAGES ==========
-    
-    if (applyAllBtn) {
-        applyAllBtn.onclick = () => {
-            if (grokSystemInput) grokSystem = grokSystemInput.value;
-            if (dsChatInput) dsChatSystem = dsChatInput.value;
-            if (dsReasonerInput) dsReasonerSystem = dsReasonerInput.value;
-            if (claudeSystemInput) claudeSystem = claudeSystemInput.value;
-            if (overrideInput) overrideSystem = overrideInput.value;
-            
-            localStorage.setItem('grok_system', grokSystem);
-            localStorage.setItem('ds_chat_system', dsChatSystem);
-            localStorage.setItem('ds_reasoner_system', dsReasonerSystem);
-            localStorage.setItem('claude_system', claudeSystem);
-            localStorage.setItem('override_system', overrideSystem);
-            
-            if (overrideSystem && overrideRemaining === 0 && overrideCountSelect) {
-                overrideRemaining = parseInt(overrideCountSelect.value);
-                localStorage.setItem('override_remaining', overrideRemaining);
-            }
-            
-            updateOverrideDisplay();
-            if (toolStatus) toolStatus.textContent = '✓ System messages saved';
-            setTimeout(() => updateToolStatus(), 2000);
-        };
-    }
-    
-    if (resetOverrideBtn && overrideCountSelect) {
-        resetOverrideBtn.onclick = () => {
-            overrideRemaining = parseInt(overrideCountSelect.value);
-            localStorage.setItem('override_remaining', overrideRemaining);
-            updateOverrideDisplay();
-        };
-    }
-    
     // ========== CHAIN BUTTONS ==========
     
     if (newChainBtn) {
@@ -453,7 +407,7 @@ function wireAllButtons() {
                     window.UIRenderer.updateMemoryPanels();
                 }
             }
-            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+            updateRightPanelMemoryLists();
             if (toolStatus) toolStatus.textContent = '✨ New thread created';
             setTimeout(() => updateToolStatus(), 2000);
         };
@@ -506,7 +460,7 @@ function wireAllButtons() {
                 
                 memory.addWorking(result.content, 'assistant');
                 if (window.UIRenderer) window.UIRenderer.renderMessages();
-                if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+                updateRightPanelMemoryLists();
                 if (toolStatus) toolStatus.textContent = '🔮 Perspective received';
                 setTimeout(() => updateToolStatus(), 2000);
             } catch (error) {
@@ -614,7 +568,7 @@ function wireAllButtons() {
                     assistantMsg.model = modelUsed;
                     if (window.UIRenderer) window.UIRenderer.renderMessages();
                     if (chainCount) chainCount.textContent = memory.active.length;
-                    if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+                    updateRightPanelMemoryLists();
                 }
                 
             } catch (error) {
@@ -647,8 +601,83 @@ function wireAllButtons() {
         };
     }
     
-    // ========== CLEAR/COMPACT MEMORY BUTTONS ==========
+    console.log('✅ Main buttons wired');
+}
+
+
+// ============================================================================
+// SYSTEM PANEL BUTTONS
+// ============================================================================
+
+function wireSystemPanelButtons() {
+    console.log('🔧 Wiring system panel buttons...');
     
+    // API Key buttons
+    const setXaiBtn = document.getElementById('set-xai-key');
+    const setDeepseekBtn = document.getElementById('set-deepseek-key');
+    const setAnthropicBtn = document.getElementById('set-anthropic-key');
+    
+    if (setXaiBtn) {
+        setXaiBtn.onclick = () => promptForApiKey('xai');
+        console.log('✓ xAI set button wired');
+    }
+    if (setDeepseekBtn) {
+        setDeepseekBtn.onclick = () => promptForApiKey('deepseek');
+        console.log('✓ DeepSeek set button wired');
+    }
+    if (setAnthropicBtn) {
+        setAnthropicBtn.onclick = () => promptForApiKey('anthropic');
+        console.log('✓ Anthropic set button wired');
+    }
+    
+    // Apply system messages button
+    const applyAllSystemBtn = document.getElementById('apply-system-all');
+    if (applyAllSystemBtn) {
+        applyAllSystemBtn.onclick = () => {
+            const grokMsg = document.getElementById('grok-system')?.value || '';
+            const dsChat = document.getElementById('ds-chat-system')?.value || '';
+            const dsReasoner = document.getElementById('ds-reasoner-system')?.value || '';
+            const claudeMsg = document.getElementById('claude-system')?.value || '';
+            const overrideMsg = document.getElementById('override-system')?.value || '';
+            
+            localStorage.setItem('grok_system', grokMsg);
+            localStorage.setItem('ds_chat_system', dsChat);
+            localStorage.setItem('ds_reasoner_system', dsReasoner);
+            localStorage.setItem('claude_system', claudeMsg);
+            localStorage.setItem('override_system', overrideMsg);
+            
+            if (overrideMsg && overrideRemaining === 0) {
+                const count = document.getElementById('override-count')?.value || '3';
+                overrideRemaining = parseInt(count);
+                localStorage.setItem('override_remaining', overrideRemaining);
+                updateOverrideDisplay();
+            }
+            
+            if (toolStatus) {
+                toolStatus.textContent = '✓ System messages saved';
+                setTimeout(() => updateToolStatus(), 2000);
+            }
+        };
+        console.log('✓ Apply system button wired');
+    }
+    
+    // Reset override button
+    const resetOverride = document.getElementById('reset-override');
+    if (resetOverride) {
+        resetOverride.onclick = () => {
+            const count = document.getElementById('override-count')?.value || '3';
+            overrideRemaining = parseInt(count);
+            localStorage.setItem('override_remaining', overrideRemaining);
+            updateOverrideDisplay();
+            if (toolStatus) {
+                toolStatus.textContent = `✓ Override reset to ${overrideRemaining} uses`;
+                setTimeout(() => updateToolStatus(), 2000);
+            }
+        };
+        console.log('✓ Reset override button wired');
+    }
+    
+    // Clear memory button
     const clearMemoryBtn = document.getElementById('clear-memory');
     if (clearMemoryBtn && memory) {
         clearMemoryBtn.onclick = () => {
@@ -657,12 +686,16 @@ function wireAllButtons() {
                 window.UIRenderer.renderMessages();
                 window.UIRenderer.updateMemoryPanels();
             }
-            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
-            if (toolStatus) toolStatus.textContent = '🧹 Working memory cleared';
-            setTimeout(() => updateToolStatus(), 2000);
+            updateRightPanelMemoryLists();
+            if (toolStatus) {
+                toolStatus.textContent = '🧹 Working memory cleared';
+                setTimeout(() => updateToolStatus(), 2000);
+            }
         };
+        console.log('✓ Clear memory button wired');
     }
     
+    // Compact memory button
     const compactMemoryBtn = document.getElementById('compact-memory');
     if (compactMemoryBtn && memory && memory.compact) {
         compactMemoryBtn.onclick = () => {
@@ -671,13 +704,137 @@ function wireAllButtons() {
                 window.UIRenderer.renderMessages();
                 window.UIRenderer.updateMemoryPanels();
             }
-            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
-            if (toolStatus) toolStatus.textContent = '📦 Memory compacted';
-            setTimeout(() => updateToolStatus(), 2000);
+            updateRightPanelMemoryLists();
+            if (toolStatus) {
+                toolStatus.textContent = '📦 Memory compacted';
+                setTimeout(() => updateToolStatus(), 2000);
+            }
+        };
+        console.log('✓ Compact memory button wired');
+    }
+    
+    // System tabs
+    const tabs = document.querySelectorAll('.sys-tab');
+    tabs.forEach(tab => {
+        tab.onclick = (e) => {
+            const tabId = tab.dataset.tab;
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            document.querySelectorAll('.sys-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            const target = document.getElementById(`sys-${tabId}`);
+            if (target) target.classList.remove('hidden');
+        };
+    });
+    console.log('✓ System tabs wired');
+    
+    // Close button
+    const closeBtn = document.getElementById('close-system');
+    if (closeBtn && systemPanel) {
+        closeBtn.onclick = () => systemPanel.classList.add('hidden');
+        console.log('✓ System close button wired');
+    }
+    
+    console.log('✅ System panel buttons wired');
+}
+
+
+// ============================================================================
+// RIGHT PANEL TABS
+// ============================================================================
+
+function wireRightPanelTabs() {
+    console.log('🔧 Wiring right panel tabs...');
+    
+    const memoryTab = document.querySelector('.panel-tab[data-panel="memory"]');
+    const entitiesTab = document.querySelector('.panel-tab[data-panel="entities"]');
+    const threadsTab = document.querySelector('.panel-tab[data-panel="threads"]');
+    
+    const memoryContent = document.getElementById('memory-panel-content');
+    const entitiesContent = document.getElementById('entities-panel-content');
+    const threadsContent = document.getElementById('threads-panel-content');
+    
+    function switchTab(activeTab, activeContent) {
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        if (memoryContent) memoryContent.classList.add('hidden');
+        if (entitiesContent) entitiesContent.classList.add('hidden');
+        if (threadsContent) threadsContent.classList.add('hidden');
+        
+        if (activeTab) activeTab.classList.add('active');
+        if (activeContent) activeContent.classList.remove('hidden');
+    }
+    
+    if (memoryTab && memoryContent) {
+        memoryTab.onclick = (e) => {
+            e.preventDefault();
+            switchTab(memoryTab, memoryContent);
+            console.log('📚 Memory tab clicked');
+            updateRightPanelMemoryLists();
+        };
+        console.log('✓ Memory tab wired');
+    }
+    
+    if (entitiesTab && entitiesContent) {
+        entitiesTab.onclick = (e) => {
+            e.preventDefault();
+            switchTab(entitiesTab, entitiesContent);
+            console.log('🌀 Entities tab clicked');
+            if (window.GenesisManager && window.GenesisManager.loadEntityList) {
+                window.GenesisManager.loadEntityList();
+            }
+        };
+        console.log('✓ Entities tab wired');
+    }
+    
+    if (threadsTab && threadsContent) {
+        threadsTab.onclick = (e) => {
+            e.preventDefault();
+            switchTab(threadsTab, threadsContent);
+            console.log('⟊ Threads tab clicked');
+            if (window.refreshThreadListPanel) window.refreshThreadListPanel();
+        };
+        console.log('✓ Threads tab wired');
+    }
+    
+    // Close certificate button
+    const closeCert = document.getElementById('close-cert');
+    const certPanel = document.getElementById('entity-certificate');
+    if (closeCert && certPanel) {
+        closeCert.onclick = () => certPanel.classList.add('hidden');
+    }
+    
+    // Refresh entities button
+    const refreshEntities = document.getElementById('refresh-entities');
+    if (refreshEntities) {
+        refreshEntities.onclick = () => {
+            if (window.GenesisManager && window.GenesisManager.loadEntityList) {
+                window.GenesisManager.loadEntityList();
+            }
         };
     }
     
-    console.log('✅ All buttons wired');
+    // New thread button in right panel
+    const newThreadPanel = document.getElementById('new-thread-panel');
+    if (newThreadPanel) {
+        newThreadPanel.onclick = async (e) => {
+            e.preventDefault();
+            const name = prompt('Thread name:');
+            if (name && window.fabric) {
+                const thread = await window.fabric.createThread(name);
+                await window.fabric.switchThread(thread.id);
+                if (window.refreshThreadListPanel) window.refreshThreadListPanel();
+                if (window.refreshFabricThreadList) window.refreshFabricThreadList();
+                console.log(`✨ Created new thread: ${name}`);
+            }
+        };
+    }
+    
+    console.log('✅ Right panel tabs wired');
 }
 
 
@@ -742,6 +899,20 @@ function updateChainDisplay() {
     if (chainCount && memory) chainCount.textContent = memory.active.length;
 }
 
+function updateMemoryStats() {
+    const workingCount = document.getElementById('memory-working-count');
+    const activeCount = document.getElementById('memory-active-count');
+    const totalTokens = document.getElementById('memory-total-tokens');
+    
+    if (workingCount && memory) workingCount.textContent = memory.working.length;
+    if (activeCount && memory) activeCount.textContent = memory.active.length;
+    if (totalTokens && memory) {
+        const total = memory.working.reduce((a, m) => a + (m.content?.length || 0), 0) +
+                     memory.active.reduce((a, m) => a + (m.content?.length || 0), 0);
+        totalTokens.textContent = total;
+    }
+}
+
 function initializeValues() {
     if (grokSystemInput) grokSystemInput.value = grokSystem;
     if (dsChatInput) dsChatInput.value = dsChatSystem;
@@ -752,6 +923,7 @@ function initializeValues() {
     updateOverrideDisplay();
     updateApiDisplays();
     updateChainDisplay();
+    updateMemoryStats();
     
     const saved = localStorage.getItem('response_params');
     if (saved) {
@@ -809,11 +981,7 @@ function saveResponseParams() {
     }));
 }
 
-// ============================================================================
-// RIGHT PANEL MEMORY UPDATE
-// ============================================================================
-
-window.updateRightPanelMemoryLists = function() {
+function updateRightPanelMemoryLists() {
     if (!memory) return;
     
     const workingList = document.getElementById('working-memory-list');
@@ -822,14 +990,14 @@ window.updateRightPanelMemoryLists = function() {
     const activeCount = document.getElementById('active-count');
     
     if (workingList) {
-        const workingMemories = memory.working.slice().reverse();
+        const workingMemories = [...memory.working].reverse();
         if (workingMemories.length === 0) {
             workingList.innerHTML = '<div class="memory-placeholder">⟊ No active memories ⟊</div>';
         } else {
             workingList.innerHTML = workingMemories.map(m => `
                 <div class="memory-item ${m.role}">
                     <div style="font-size: 8px; color: #6c5ce7;">${m.role.toUpperCase()} · ${new Date(m.timestamp).toLocaleTimeString()}</div>
-                    <div style="margin-top: 4px;">${escapeHtmlDisplay(m.content.substring(0, 100))}${m.content.length > 100 ? '...' : ''}</div>
+                    <div style="margin-top: 4px;">${escapeHtmlDisplay(m.content?.substring(0, 100) || '')}${(m.content?.length || 0) > 100 ? '...' : ''}</div>
                 </div>
             `).join('');
         }
@@ -837,20 +1005,22 @@ window.updateRightPanelMemoryLists = function() {
     }
     
     if (activeList) {
-        const activeMemories = memory.active.slice().reverse();
+        const activeMemories = [...memory.active].reverse();
         if (activeMemories.length === 0) {
             activeList.innerHTML = '<div class="memory-placeholder">⟊ Archive empty ⟊</div>';
         } else {
             activeList.innerHTML = activeMemories.map(m => `
                 <div class="memory-item ${m.role}">
                     <div style="font-size: 8px; color: #6c5ce7;">${m.role.toUpperCase()} · ${new Date(m.timestamp).toLocaleTimeString()}</div>
-                    <div style="margin-top: 4px;">${escapeHtmlDisplay(m.content.substring(0, 100))}${m.content.length > 100 ? '...' : ''}</div>
+                    <div style="margin-top: 4px;">${escapeHtmlDisplay(m.content?.substring(0, 100) || '')}${(m.content?.length || 0) > 100 ? '...' : ''}</div>
                 </div>
             `).join('');
         }
         if (activeCount) activeCount.textContent = memory.active.length;
     }
-};
+    
+    updateMemoryStats();
+}
 
 function escapeHtmlDisplay(str) {
     if (!str) return '';
@@ -862,7 +1032,82 @@ function escapeHtmlDisplay(str) {
     });
 }
 
-// Expose globally
+
+// ============================================================================
+// EXPOSE GLOBALLY
+// ============================================================================
+
 window.promptForApiKey = promptForApiKey;
 window.updateChainDisplay = updateChainDisplay;
-window.updateRightPanelMemoryLists = window.updateRightPanelMemoryLists;
+window.updateRightPanelMemoryLists = updateRightPanelMemoryLists;
+window.updateMemoryStats = updateMemoryStats;
+window.wireSystemPanelButtons = wireSystemPanelButtons;
+window.wireRightPanelTabs = wireRightPanelTabs;
+window.refreshThreadListPanel = async function() {
+    const threadListEl = document.getElementById('thread-list-panel');
+    if (!threadListEl || !window.fabric) return;
+    
+    try {
+        const threads = await window.fabric.vault.listThreads();
+        if (threads.length === 0) {
+            threadListEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet. Create one with + button ⟊</div>';
+            return;
+        }
+        
+        threadListEl.innerHTML = threads.map(t => `
+            <div class="thread-item ${t.id === window.fabric.currentThreadId ? 'active' : ''}" data-thread-id="${t.id}">
+                ${escapeHtmlDisplay(t.name || t.id.slice(0, 8))}
+                <div style="font-size: 8px; color: #6c5ce7; margin-top: 4px;">${new Date(t.updated).toLocaleDateString()}</div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('#thread-list-panel .thread-item').forEach(el => {
+            el.onclick = () => {
+                const threadId = el.dataset.threadId;
+                if (window.fabric) {
+                    window.fabric.switchThread(threadId);
+                    window.refreshThreadListPanel();
+                    if (window.refreshFabricThreadList) window.refreshFabricThreadList();
+                    updateChainDisplay();
+                }
+            };
+        });
+    } catch (e) {
+        console.error('Failed to load threads:', e);
+    }
+};
+
+window.refreshFabricThreadList = async function() {
+    const threadListEl = document.getElementById('thread-list-fabric');
+    if (!threadListEl || !window.fabric) return;
+    
+    try {
+        const threads = await window.fabric.vault.listThreads();
+        if (threads.length === 0) {
+            threadListEl.innerHTML = '<div class="loading-threads">⟊ No threads yet ⟊</div>';
+            return;
+        }
+        
+        threadListEl.innerHTML = threads.map(t => `
+            <div class="thread-item-fabric ${t.id === window.fabric.currentThreadId ? 'active' : ''}" data-thread-id="${t.id}">
+                ${escapeHtmlDisplay(t.name || t.id.slice(0, 8))}
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('#thread-list-fabric .thread-item-fabric').forEach(el => {
+            el.onclick = () => {
+                const threadId = el.dataset.threadId;
+                if (window.fabric) {
+                    window.fabric.switchThread(threadId);
+                    window.refreshFabricThreadList();
+                    if (window.refreshThreadListPanel) window.refreshThreadListPanel();
+                    updateChainDisplay();
+                }
+            };
+        });
+    } catch (e) {
+        console.error('Failed to load fabric threads:', e);
+    }
+};
+
+console.log('✅ app.js fully loaded');
