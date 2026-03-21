@@ -1,215 +1,95 @@
-// js/memory-fabric.js
-// Lilareyon Noetic Fabric – manages distributed memory across models
-
-class NoeticFabric {
-    constructor() {
-        this.vault = null;
-        this.ready = false;
-        this.currentThreadId = null;
-        this.modelContexts = { grok: [], deepseek: [], claude: [] };
-        this.vectorClock = { grok: 0, deepseek: 0, claude: 0, local: 0 };
-        this.listeners = [];
+// js/model-clients/grok-client.js – v2.0 with streaming
+class GrokClient {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.baseUrl = 'https://api.x.ai/v1';
+        this.currentResponseId = null;
+        this.systemPrompt = null;
     }
 
-    async init() {
-        this.vault = new MemoryVault();
-        await this.vault.init();
-        await this.loadCurrentThread();
-        this.ready = true;
-        this._emit('ready');
-        return this;
+    setSystemPrompt(p) { this.systemPrompt = p; }
+    setCurrentResponseId(id) { this.currentResponseId = id; }
+    getCurrentResponseId() { return this.currentResponseId; }
+
+    async sendMessage(message, options = {}) {
+        return this._callAPI(message, { ...options, stream: false });
     }
 
-    async loadCurrentThread() {
-        const savedThread = localStorage.getItem('lilareyon_current_thread');
-        if (savedThread) {
-            this.currentThreadId = savedThread;
-            const thread = await this.vault.getThread(this.currentThreadId);
-            if (!thread) {
-                // create missing thread
-                this.currentThreadId = this._generateId();
-                await this.vault.saveThread({
-                    id: this.currentThreadId,
-                    created: Date.now(),
-                    updated: Date.now(),
-                    name: 'Main Thread'
-                });
-                localStorage.setItem('lilareyon_current_thread', this.currentThreadId);
-            }
-        } else {
-            this.currentThreadId = this._generateId();
-            await this.vault.saveThread({
-                id: this.currentThreadId,
-                created: Date.now(),
-                updated: Date.now(),
-                name: 'Main Thread'
-            });
-            localStorage.setItem('lilareyon_current_thread', this.currentThreadId);
-        }
-        // load memories for this thread into model contexts
-        const memories = await this.vault.getMemoriesByThread(this.currentThreadId);
-        this.modelContexts = { grok: [], deepseek: [], claude: [] };
-        for (const mem of memories) {
-            if (this.modelContexts[mem.model]) {
-                this.modelContexts[mem.model].push(mem);
-            }
-        }
-        // also load shared memories (all threads? we'll limit to recent)
-        // For simplicity, we'll just use thread memories for context.
+    async sendMessageStream(message, options = {}, onChunk) {
+        return this._callAPI(message, { ...options, stream: true }, onChunk);
     }
 
-    async switchThread(threadId) {
-        this.currentThreadId = threadId;
-        localStorage.setItem('lilareyon_current_thread', threadId);
-        await this.loadCurrentThread();
-        this._emit('threadChanged', threadId);
-    }
+    async _callAPI(message, options, onChunk = null) {
+        if (!this.apiKey) throw new Error('xAI API key missing');
 
-    async createThread(name) {
-        const id = this._generateId();
-        const thread = { id, name, created: Date.now(), updated: Date.now() };
-        await this.vault.saveThread(thread);
-        return thread;
-    }
+        const { model = 'grok-4', temperature = 0.7, stateful = true, previousResponseId = null, stream = false } = options;
 
-    async forkThread(sourceId, newName) {
-        const sourceMemories = await this.vault.getMemoriesByThread(sourceId);
-        const newId = this._generateId();
-        const newThread = { id: newId, name: newName, created: Date.now(), updated: Date.now() };
-        await this.vault.saveThread(newThread);
-        // copy memories? optionally, but we'll just mark them as part of new thread? better to copy.
-        for (const mem of sourceMemories) {
-            const copy = { ...mem, id: this._generateId(), threadId: newId, timestamp: Date.now() };
-            await this.vault.saveMemory(copy);
-        }
-        return newThread;
-    }
+        const input = [];
+        if (!previousResponseId && this.systemPrompt) input.push({ role: 'system', content: this.systemPrompt });
+        input.push({ role: 'user', content: message });
 
-    // Called after a model responds
-    async addMemory(content, role, model, metadata = {}) {
-        const id = this._generateId();
-        const timestamp = Date.now();
-        const resonance = this._computeResonance(content);
-        const memory = {
-            id,
-            threadId: this.currentThreadId,
+        const body = {
             model,
-            role,
-            content,
-            timestamp,
-            resonance,
-            vectorClock: { ...this.vectorClock, [model]: (this.vectorClock[model] || 0) + 1 },
-            ...metadata
+            input,
+            temperature,
+            max_output_tokens: 8192,
+            store: stateful
         };
-        await this.vault.saveMemory(memory);
-        // update local context
-        if (this.modelContexts[model]) {
-            this.modelContexts[model].push(memory);
+        if (previousResponseId || (stateful && this.currentResponseId)) {
+            body.previous_response_id = previousResponseId || this.currentResponseId;
         }
-        // increment vector clock for this model
-        this.vectorClock[model] = (this.vectorClock[model] || 0) + 1;
-        this.vectorClock.local = (this.vectorClock.local || 0) + 1;
-        this._emit('newMemory', memory);
-        return memory;
-    }
+        if (stream) body.stream = true;
 
-    // Build context string for a given model, optionally including other models' memories
-    async buildContext(model, includeCrossModel = true, limit = 20) {
-        let context = '';
-        // 1. Current thread memories for this model
-        const modelMemories = this.modelContexts[model] || [];
-        const recent = modelMemories.slice(-limit);
-        for (const mem of recent) {
-            context += `[${mem.role.toUpperCase()} (${mem.model})]: ${mem.content}\n`;
+        const res = await fetch(`${this.baseUrl}/responses`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}` },
+            body: JSON.stringify(body)
+        });
+
+        if (!res.ok) throw new Error(`API Error ${res.status}: ${await res.text()}`);
+
+        if (!stream) {
+            const data = await res.json();
+            const text = data.output?.flatMap(o => o.content?.filter(c => c.type === 'output_text').map(c => c.text) || []).join('') || '';
+            if (stateful && data.id) this.currentResponseId = data.id;
+            return { text, responseId: data.id, stored: true };
         }
-        if (includeCrossModel) {
-            // 2. Add cross-model insights (memories from other models that are relevant)
-            const otherModels = ['grok', 'deepseek', 'claude'].filter(m => m !== model);
-            for (const other of otherModels) {
-                const otherMemories = this.modelContexts[other] || [];
-                const crossRecent = otherMemories.slice(-Math.floor(limit/3));
-                for (const mem of crossRecent) {
-                    context += `[${mem.role.toUpperCase()} (${mem.model})]: ${mem.content}\n`;
-                }
+
+        // === STREAMING ===
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let fullText = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+                if (!line.trim() || !line.startsWith('data: ')) continue;
+                const jsonStr = line.slice(6);
+                if (jsonStr === '[DONE]') continue;
+
+                try {
+                    const event = JSON.parse(jsonStr);
+                    const delta = event?.output?.[0]?.content?.[0]?.text_delta || 
+                                 event?.delta?.text || '';
+                    if (delta) {
+                        fullText += delta;
+                        onChunk?.(delta, fullText);
+                    }
+                    if (event.id && stateful) this.currentResponseId = event.id;
+                } catch (e) {}
             }
         }
-        return context;
+        return { text: fullText, responseId: this.currentResponseId, stored: true };
     }
 
-    // Retrieve memories by resonance frequency (for semantic/geometric queries)
-    async queryByResonance(resonance, limit = 10) {
-        const all = await this.vault.getAllMemories();
-        // sort by closeness to given resonance (absolute diff)
-        const sorted = all.sort((a,b) => Math.abs(a.resonance - resonance) - Math.abs(b.resonance - resonance));
-        return sorted.slice(0, limit);
-    }
-
-    // Export full fabric state
-    async exportState() {
-        const memories = await this.vault.getAllMemories();
-        const threads = await this.vault.listThreads();
-        const entities = await this.vault.listEntities();
-        return {
-            version: 1,
-            exportedAt: Date.now(),
-            memories,
-            threads,
-            entities,
-            vectorClock: this.vectorClock
-        };
-    }
-
-    // Import state (merges with existing)
-    async importState(state) {
-        if (state.version !== 1) throw new Error('Unsupported version');
-        for (const mem of state.memories) {
-            // check if exists by id
-            const existing = await this.vault.getMemory(mem.id);
-            if (!existing) {
-                await this.vault.saveMemory(mem);
-            }
-        }
-        for (const thread of state.threads) {
-            const existing = await this.vault.getThread(thread.id);
-            if (!existing) {
-                await this.vault.saveThread(thread);
-            }
-        }
-        for (const ent of state.entities) {
-            const existing = await this.vault.getEntity(ent.id);
-            if (!existing) {
-                await this.vault.saveEntity(ent);
-            }
-        }
-        // merge vector clocks (max)
-        for (const model in state.vectorClock) {
-            this.vectorClock[model] = Math.max(this.vectorClock[model] || 0, state.vectorClock[model]);
-        }
-        await this.loadCurrentThread(); // reload contexts
-    }
-
-    // Resonance calculation (simple hash -> float between 0 and 1)
-    _computeResonance(text) {
-        let hash = 0;
-        for (let i = 0; i < text.length; i++) {
-            hash = ((hash << 5) - hash) + text.charCodeAt(i);
-            hash |= 0;
-        }
-        // map to 0-1
-        return (Math.abs(hash) % 1000) / 1000;
-    }
-
-    _generateId() {
-        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    on(event, callback) {
-        this.listeners.push({ event, callback });
-    }
-
-    _emit(event, data) {
-        this.listeners.filter(l => l.event === event).forEach(l => l.callback(data));
-    }
+    resetConversation() { this.currentResponseId = null; }
 }
 
-window.NoeticFabric = NoeticFabric;
+window.GrokClient = GrokClient;
