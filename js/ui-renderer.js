@@ -1,131 +1,91 @@
-const UIRenderer = {
-    memory: null,
+// js/ui-renderer.js – v2.0 with Markdown
+window.UIRenderer = {
+    messagesContainer: null,
 
-    init(memoryInstance) {
-        this.memory = memoryInstance;
+    init() {
+        this.messagesContainer = document.getElementById('messages-area');
     },
 
-    renderMessages() {
-        const area = document.getElementById('messages-area');
-        if (!area || !this.memory) return;
-
-        area.innerHTML = '';
+    // Simple but powerful Markdown parser (bold, italic, code, lists, links, newlines)
+    renderMarkdown(text) {
+        let html = text
+            .replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^\*]+)\*/g, '<em>$1</em>')
+            .replace(/`([^`]+)`/g, '<code style="background:#1a1a2e;padding:2px 6px;border-radius:4px;">$1</code>')
+            .replace(/\n/g, '<br>')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:#a88eff;">$1</a>');
         
-        this.memory.working.forEach(msg => {
-            const container = document.createElement('div');
-            container.className = 'message-container';
-            container.setAttribute('data-role', msg.role);
-            if (msg.id) container.id = `msg-${msg.id}`;
-
-            // Header
-            const header = document.createElement('div');
-            header.className = 'message-header';
-            
-            const roleSpan = document.createElement('span');
-            roleSpan.className = 'message-role';
-            roleSpan.textContent = msg.role === 'user' ? 'YOU' : 
-                                  msg.role === 'assistant' ? 'AURELIAN' : 'SYSTEM';
-            
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'message-time';
-            timeSpan.textContent = msg.time || new Date().toLocaleTimeString();
-            
-            if (msg.model) {
-                const modelSpan = document.createElement('span');
-                modelSpan.style.color = '#0a84ff';
-                modelSpan.style.marginLeft = '8px';
-                modelSpan.textContent = msg.model.includes('grok') ? '🤖' : '🔮';
-                header.appendChild(modelSpan);
-            }
-            
-            header.appendChild(roleSpan);
-            header.appendChild(timeSpan);
-            
-            // Content
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            
-            if (msg.role === 'assistant' && msg.content.startsWith('http') && msg.attachments?.some(a => a.name === 'generated_image')) {
-                const img = document.createElement('img');
-                img.src = msg.content;
-                img.style.maxWidth = '100%';
-                img.style.borderRadius = '8px';
-                content.appendChild(img);
-            } else {
-                content.textContent = msg.content;
-            }
-            
-            container.appendChild(header);
-            container.appendChild(content);
-            
-            // Attachments
-            if (msg.attachments && msg.attachments.length > 0) {
-                const attDiv = document.createElement('div');
-                attDiv.className = 'message-attachments';
-                attDiv.textContent = `📎 ${msg.attachments.map(a => a.name).join(', ')}`;
-                container.appendChild(attDiv);
-            }
-            
-            // Reasoning
-            if (msg.reasoning) {
-                const reasoning = document.createElement('div');
-                reasoning.className = 'message-reasoning';
-                reasoning.textContent = `🔍 ${msg.reasoning}`;
-                container.appendChild(reasoning);
-            }
-            
-            area.appendChild(container);
-        });
-
-        area.scrollTop = area.scrollHeight;
+        // Basic unordered list
+        html = html.replace(/^- (.*)$/gm, '<li style="margin-left:20px;">$1</li>');
+        if (html.includes('<li')) html = '<ul style="margin:8px 0;">' + html + '</ul>';
+        return html;
     },
 
-    updateMemoryPanels() {
-        if (!this.memory) return;
-
-        // Update counts
-        const l1Count = document.getElementById('l1-count');
-        const l2Count = document.getElementById('l2-count');
-        if (l1Count) l1Count.textContent = this.memory.working.length;
-        if (l2Count) l2Count.textContent = this.memory.active.length;
-
-        // Render memory panel
-        const panel = document.getElementById('memory-panel');
-        if (!panel) return;
-
-        panel.innerHTML = '<h4 style="color:#98989e; margin-bottom:8px;">FREQUENT MEMORIES</h4>';
+    renderMessages(messages) {
+        if (!this.messagesContainer) return;
         
-        const topMemories = this.memory.getTopActive(5);
-        if (topMemories.length === 0) {
-            panel.innerHTML += '<p style="color:#636366; font-size:11px;">No active memories yet</p>';
+        if (!messages || messages.length === 0) {
+            this.messagesContainer.innerHTML = `
+                <div class="welcome-screen">
+                    <div class="eye-symbol">𓂀</div>
+                    <div class="welcome-title">LILAREYON NOETIC FABRIC v2.0</div>
+                    <div style="margin-top:20px;font-size:13px;color:#6c5ce7;">Stateful • Streaming • Markdown</div>
+                </div>`;
             return;
         }
 
-        const list = document.createElement('ul');
-        list.className = 'memory-list';
-        
-        topMemories.forEach(mem => {
-            const item = document.createElement('li');
-            item.className = 'memory-item';
-            item.innerHTML = `
-                <div>${mem.content.substring(0, 60)}${mem.content.length > 60 ? '...' : ''}</div>
-                <div class="memory-freq">used ${mem.freq} times</div>
-            `;
-            list.appendChild(item);
+        let html = '';
+        messages.forEach(msg => {
+            const isUser = msg.role === 'user';
+            html += `
+                <div style="display:flex;justify-content:${isUser?'flex-end':'flex-start'};margin-bottom:20px;">
+                    <div style="max-width:80%;background:${isUser?'#6c5ce7':'#1a1a2e'};border-radius:16px;padding:14px 18px;border:${isUser?'none':'1px solid #6c5ce7'};">
+                        <div style="font-size:11px;color:#a88eff;margin-bottom:6px;">
+                            ${isUser ? 'YOU' : 'LILAREYON'} 
+                            ${msg.responseId ? `• 📡 ${msg.responseId.substring(0,8)}…` : ''}
+                        </div>
+                        <div style="font-size:14px;line-height:1.5;">
+                            ${this.renderMarkdown(msg.content)}
+                        </div>
+                        ${msg.timestamp ? `<div style="font-size:10px;color:#666;margin-top:8px;">${new Date(msg.timestamp).toLocaleTimeString()}</div>` : ''}
+                    </div>
+                </div>`;
         });
         
-        panel.appendChild(list);
+        this.messagesContainer.innerHTML = html;
+        this.scrollToBottom();
     },
 
-    showTemporaryStatus(elementId, message, duration = 2000) {
-        const el = document.getElementById(elementId);
-        if (!el) return;
+    appendMessage(message, isStreaming = false) {
+        if (!this.messagesContainer) return;
+        if (this.messagesContainer.querySelector('.welcome-screen')) this.messagesContainer.innerHTML = '';
+
+        const isUser = message.role === 'user';
+        const div = document.createElement('div');
+        div.style.cssText = `display:flex;justify-content:${isUser?'flex-end':'flex-start'};margin-bottom:20px;`;
+        div.innerHTML = `
+            <div style="max-width:80%;background:${isUser?'#6c5ce7':'#1a1a2e'};border-radius:16px;padding:14px 18px;border:${isUser?'none':'1px solid #6c5ce7'};">
+                <div style="font-size:11px;color:#a88eff;margin-bottom:6px;">${isUser?'YOU':'LILAREYON'}</div>
+                <div class="message-content" style="font-size:14px;line-height:1.5;">${isStreaming ? message.content : this.renderMarkdown(message.content)}</div>
+            </div>`;
         
-        el.textContent = message;
-        setTimeout(() => {
-            el.textContent = '';
-        }, duration);
+        this.messagesContainer.appendChild(div);
+        this.scrollToBottom();
+        return div; // for streaming updates
+    },
+
+    updateStreamingContent(element, newText) {
+        const contentDiv = element.querySelector('.message-content');
+        if (contentDiv) contentDiv.innerHTML = this.renderMarkdown(newText);
+    },
+
+    scrollToBottom() {
+        if (this.messagesContainer) this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
 };
 
-window.UIRenderer = UIRenderer;
+window.renderMessages = () => window.UIRenderer.renderMessages(window.MemoryCore?.getCurrentThread()?.messages || []);
+window.updateThreadsList = window.UIRenderer.updateThreadsList; // kept for compatibility
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => window.UIRenderer.init());
+else window.UIRenderer.init();
