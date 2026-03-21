@@ -1,25 +1,198 @@
-<!-- components/fabric-panel.html -->
 <div id="fabric-panel" class="fabric-panel hidden">
     <div class="fabric-header">
         <h2>🧠 NOETIC FABRIC</h2>
         <button id="fabric-close" class="fabric-close">✕</button>
     </div>
+    
     <div class="fabric-content">
         <div class="fabric-section">
             <h3>📜 THREADS</h3>
-            <div id="thread-list"></div>
-            <button id="new-thread-btn">+ New Thread</button>
+            <div id="thread-list" class="thread-list-fabric">
+                <div class="loading-threads">⟊ Loading threads... ⟊</div>
+            </div>
+            <button id="new-thread-btn" class="fabric-btn">+ NEW THREAD</button>
         </div>
+        
         <div class="fabric-section">
             <h3>🔗 SHARED MEMORY</h3>
-            <div id="shared-memories"></div>
+            <div id="shared-memories" class="shared-memories">
+                <div class="memory-placeholder">⟊ No shared memories yet ⟊</div>
+            </div>
         </div>
+        
         <div class="fabric-section">
             <h3>⚙️ SYNC STATUS</h3>
-            <div id="sync-status">Active</div>
-            <button id="export-fabric-btn">📤 Export</button>
-            <button id="import-fabric-btn">📥 Import</button>
+            <div id="sync-status" class="sync-status">🟢 ACTIVE</div>
+            <div class="fabric-buttons">
+                <button id="export-fabric-btn" class="fabric-btn small">📤 EXPORT</button>
+                <button id="import-fabric-btn" class="fabric-btn small">📥 IMPORT</button>
+            </div>
             <input type="file" id="import-file" style="display:none" accept=".json">
+        </div>
+        
+        <div class="fabric-section">
+            <h3>📊 FABRIC STATS</h3>
+            <div class="fabric-stats">
+                <div><span class="stat-label">Total Memories:</span> <span id="fabric-memory-count">0</span></div>
+                <div><span class="stat-label">Active Threads:</span> <span id="fabric-thread-count">0</span></div>
+                <div><span class="stat-label">Entities:</span> <span id="fabric-entity-count">0</span></div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.fabric-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 100vh;
+    background: rgba(1, 4, 14, 0.98);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(108, 92, 231, 0.4);
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+}
+
+.fabric-panel:not(.hidden) {
+    transform: translateX(0);
+}
+
+.fabric-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: rgba(1, 4, 14, 0.95);
+}
+
+.fabric-header h2 {
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #a88eff;
+}
+
+.fabric-close {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.fabric-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.15);
+}
+
+.fabric-section h3 {
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin: 0 0 12px 0;
+    color: #a88eff;
+}
+
+.thread-list-fabric {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.thread-item {
+    background: rgba(30, 20, 50, 0.4);
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+}
+
+.thread-item:hover {
+    background: rgba(108, 92, 231, 0.2);
+}
+
+.thread-item.active {
+    border-left-color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.15);
+    color: white;
+}
+
+.fabric-btn {
+    background: rgba(108, 92, 231, 0.3);
+    border: 1px solid #6c5ce7;
+    color: #a88eff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: monospace;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.fabric-btn:hover {
+    background: #6c5ce7;
+    color: white;
+}
+
+.fabric-btn.small {
+    width: auto;
+    padding: 6px 12px;
+}
+
+.fabric-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.sync-status {
+    font-size: 10px;
+    color: #48bb78;
+    margin-bottom: 12px;
+}
+
+.fabric-stats {
+    font-size: 10px;
+    color: #b8aaff;
+    line-height: 1.8;
+}
+
+.stat-label {
+    color: #a88eff;
+    display: inline-block;
+    width: 110px;
+}
+
+.loading-threads, .memory-placeholder {
+    text-align: center;
+    padding: 20px;
+    font-size: 9px;
+    color: #6c5ce7;
+    opacity: 0.6;
+}
+
+.shared-memories {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.shared-memory-item {
+    background: rgba(30, 20, 50, 0.3);
+    padding: 6px 10px;
+    margin: 4px 0;
+    border-radius: 4px;
+    font-size: 8px;
+    border-left: 2px solid #48bb78;
+}
+</style>
