@@ -1,0 +1,218 @@
+<div id="threads-sidebar" class="threads-sidebar">
+    <div class="threads-header">
+        <h3>⟊ THREADS</h3>
+        <button id="sidebar-new-thread" class="new-thread-btn">+ NEW</button>
+    </div>
+    <div id="thread-list-sidebar" class="thread-list-sidebar">
+        <div class="thread-placeholder">⟊ Loading threads... ⟊</div>
+    </div>
+    <div class="threads-footer">
+        <div class="thread-stats">
+            <span id="thread-count-display">0</span> threads
+        </div>
+    </div>
+</div>
+
+<style>
+.threads-sidebar {
+    width: 260px;
+    height: 100vh;
+    background: rgba(1, 4, 14, 0.95);
+    border-right: 1px solid rgba(108, 92, 231, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.threads-sidebar.open {
+    transform: translateX(0);
+}
+
+.threads-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.threads-header h3 {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #a88eff;
+}
+
+.new-thread-btn {
+    background: rgba(108, 92, 231, 0.3);
+    border: 1px solid #6c5ce7;
+    color: #a88eff;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.new-thread-btn:hover {
+    background: #6c5ce7;
+    color: white;
+}
+
+.thread-list-sidebar {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.thread-item-sidebar {
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(30, 20, 50, 0.3);
+    border-left: 2px solid transparent;
+}
+
+.thread-item-sidebar:hover {
+    background: rgba(108, 92, 231, 0.2);
+}
+
+.thread-item-sidebar.active {
+    background: rgba(108, 92, 231, 0.25);
+    border-left-color: #6c5ce7;
+}
+
+.thread-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: #e2e2ff;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.thread-meta {
+    font-size: 8px;
+    color: #8a8a9e;
+    display: flex;
+    justify-content: space-between;
+}
+
+.thread-count {
+    background: rgba(108, 92, 231, 0.3);
+    padding: 0 6px;
+    border-radius: 10px;
+}
+
+.threads-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(108, 92, 231, 0.2);
+    font-size: 9px;
+    color: #6c5ce7;
+    text-align: center;
+}
+
+.thread-placeholder {
+    text-align: center;
+    padding: 30px;
+    font-size: 9px;
+    color: #6c5ce7;
+    opacity: 0.5;
+}
+
+/* Toggle button for sidebar */
+.threads-toggle-btn {
+    position: fixed;
+    left: 16px;
+    bottom: 20px;
+    background: rgba(108, 92, 231, 0.6);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+}
+
+.threads-toggle-btn:hover {
+    background: #6c5ce7;
+    transform: scale(1.05);
+}
+</style>
+
+<script>
+(function() {
+    function wireThreadsSidebar() {
+        console.log('🔧 Wiring threads sidebar...');
+        
+        const sidebar = document.getElementById('threads-sidebar');
+        const toggleBtn = document.getElementById('threads-toggle-btn');
+        
+        if (toggleBtn && sidebar) {
+            toggleBtn.onclick = () => {
+                sidebar.classList.toggle('open');
+            };
+        }
+        
+        // New thread button
+        const newThreadBtn = document.getElementById('sidebar-new-thread');
+        if (newThreadBtn && window.fabric) {
+            newThreadBtn.onclick = async () => {
+                const name = prompt('Thread name:', `Thread ${new Date().toLocaleString()}`);
+                if (name) {
+                    const thread = await window.fabric.createThread(name);
+                    await window.fabric.switchThread(thread.id);
+                    window.refreshSidebarThreadList();
+                    if (window.updateChainDisplay) window.updateChainDisplay();
+                    if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+                    // Clear chat area
+                    if (window.memory) {
+                        window.memory.clearWorking();
+                        if (window.UIRenderer) window.UIRenderer.renderMessages();
+                    }
+                }
+            };
+        }
+        
+        console.log('✅ Threads sidebar wired');
+    }
+    
+    window.refreshSidebarThreadList = async function() {
+        const threadListEl = document.getElementById('thread-list-sidebar');
+        if (!threadListEl || !window.fabric) return;
+        
+        try {
+            const threads = await window.fabric.vault.listThreads();
+            const threadCountSpan = document.getElementById('thread-count-display');
+            if (threadCountSpan) threadCountSpan.textContent = threads.length;
+            
+            if (!threads || threads.length === 0) {
+                threadListEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet. Click + NEW ⟊</div>';
+                return;
+            }
+            
+            // Sort by updated date, most recent first
+            threads.sort((a, b) => b.updated - a.updated);
+            
+            threadListEl.innerHTML = threads.map(t => {
+                const messageCount = window.memory ? window.memory.active.filter(m => m.threadId === t.id).length : 0;
+                return `
+                    <div class="thread-item-sidebar ${t.id === window.fabric.currentThreadId ? 'active' : ''}" data-thread-id="${t.id}">
+                        <div class="thread-name">${escapeHtml(t.name || t.id.slice(0, 8))}</div>
+                        <div class="thread-meta">
+                            <
