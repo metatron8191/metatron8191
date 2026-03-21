@@ -1,9 +1,9 @@
 <div class="input-container">
     <div class="input-toolbar">
         <div class="input-tools">
-            <button id="webSearchBtn" class="input-tool" title="Web Search">🌐</button>
-            <button id="xSearchBtn" class="input-tool" title="X Search">𝕏</button>
-            <button id="imageGenBtn" class="input-tool" title="Image Generation">🎨</button>
+            <button id="webSearchBtn" class="input-tool" title="Web Search" disabled>🌐</button>
+            <button id="xSearchBtn" class="input-tool" title="X Search" disabled>𝕏</button>
+            <button id="imageGenBtn" class="input-tool" title="Image Generation" disabled>🎨</button>
             <button id="streamToggle" class="input-tool stream-btn" title="Streaming">⚡ STREAM: OFF</button>
             <label class="file-label" title="Attach File">
                 📎
@@ -12,14 +12,14 @@
         </div>
         <div id="tool-status" class="tool-status"></div>
     </div>
-    
+
     <div class="input-row">
         <textarea id="message-input" rows="2" placeholder="Type your message... (Enter to send, Shift+Enter for new line)"></textarea>
         <button id="transmit-button" class="transmit-btn">↵</button>
     </div>
-    
+
     <div id="file-names" class="file-names"></div>
-    
+
     <div class="response-style-selector">
         <select id="response-style">
             <option value="precise">🎯 PRECISE</option>
@@ -37,19 +37,16 @@
     background: rgba(1, 4, 14, 0.95);
     border-top: 1px solid rgba(108, 92, 231, 0.3);
 }
-
 .input-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
-
 .input-tools {
     display: flex;
     gap: 8px;
 }
-
 .input-tool {
     background: rgba(30, 20, 50, 0.6);
     border: 1px solid rgba(108, 92, 231, 0.3);
@@ -60,22 +57,23 @@
     border-radius: 20px;
     transition: all 0.2s;
 }
-
 .input-tool.active {
     background: #6c5ce7;
     color: white;
     border-color: #a88eff;
 }
-
-.input-tool:hover {
+.input-tool:hover:not(:disabled) {
     background: #6c5ce7;
     transform: translateY(-1px);
 }
-
+.input-tool:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
 .stream-btn {
     font-size: 10px;
+    min-width: 110px;
 }
-
 .file-label {
     background: rgba(30, 20, 50, 0.6);
     border: 1px solid rgba(108, 92, 231, 0.3);
@@ -88,7 +86,6 @@
     align-items: center;
     gap: 4px;
 }
-
 .tool-status {
     font-size: 9px;
     color: #a88eff;
@@ -96,13 +93,11 @@
     padding: 4px 10px;
     border-radius: 16px;
 }
-
 .input-row {
     display: flex;
     gap: 12px;
     align-items: flex-end;
 }
-
 #message-input {
     flex: 1;
     background: rgba(0, 0, 0, 0.6);
@@ -114,14 +109,14 @@
     font-size: 12px;
     resize: none;
     transition: all 0.2s;
+    max-height: 160px;
+    overflow-y: auto;
 }
-
 #message-input:focus {
     outline: none;
     border-color: #6c5ce7;
     box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
 }
-
 .transmit-btn {
     background: #6c5ce7;
     border: none;
@@ -133,24 +128,22 @@
     cursor: pointer;
     transition: all 0.2s;
 }
-
-.transmit-btn:hover {
+.transmit-btn:hover:not(:disabled) {
     transform: scale(1.05);
     box-shadow: 0 0 16px rgba(108, 92, 231, 0.5);
 }
-
 .transmit-btn:disabled {
     opacity: 0.5;
-    transform: none;
+    cursor: not-allowed;
 }
-
 .file-names {
     font-size: 9px;
     color: #a88eff;
     margin-top: 8px;
     padding-left: 8px;
+    max-height: 60px;
+    overflow-y: auto;
 }
-
 .response-style-selector {
     display: flex;
     justify-content: space-between;
@@ -158,7 +151,6 @@
     margin-top: 12px;
     gap: 12px;
 }
-
 #response-style {
     background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(108, 92, 231, 0.4);
@@ -169,7 +161,6 @@
     font-size: 10px;
     cursor: pointer;
 }
-
 .deepseek-perspective {
     background: rgba(108, 92, 231, 0.2);
     border: 1px solid #6c5ce7;
@@ -181,9 +172,144 @@
     cursor: pointer;
     transition: all 0.2s;
 }
-
 .deepseek-perspective:hover {
     background: #6c5ce7;
     color: white;
 }
 </style>
+
+<script>
+(function() {
+    let streamingEnabled = false;
+    let attachedFiles = [];
+
+    const initInputArea = () => {
+        const textarea     = document.getElementById('message-input');
+        const sendBtn      = document.getElementById('transmit-button');
+        const streamBtn    = document.getElementById('streamToggle');
+        const styleSelect  = document.getElementById('response-style');
+        const deepseekBtn  = document.getElementById('getDeepSeekBtn');
+        const fileInput    = document.getElementById('file-input');
+        const fileNamesDiv = document.getElementById('file-names');
+        const toolStatus   = document.getElementById('tool-status');
+
+        if (!textarea || !sendBtn) return;
+
+        // Auto-resize textarea
+        const resizeTextarea = () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
+        };
+        textarea.addEventListener('input', resizeTextarea);
+        resizeTextarea(); // initial
+
+        // Send message logic
+        const sendMessage = () => {
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            sendBtn.disabled = true;
+            textarea.disabled = true;
+
+            // Optional: show sending status
+            if (toolStatus) toolStatus.textContent = "Sending...";
+
+            if (window.sendUserMessage) {
+                // Pass streaming preference (Grok supports it)
+                window.sendUserMessage(text, { stream: streamingEnabled })
+                    .then(() => {
+                        // success
+                    })
+                    .catch(err => {
+                        console.error("Send failed:", err);
+                        if (toolStatus) toolStatus.textContent = "Error: " + (err.message || "failed");
+                    })
+                    .finally(() => {
+                        textarea.value = '';
+                        resizeTextarea();
+                        textarea.disabled = false;
+                        sendBtn.disabled = false;
+                        textarea.focus();
+                        if (toolStatus) toolStatus.textContent = "";
+                    });
+            } else {
+                console.warn("sendUserMessage not ready");
+                textarea.disabled = false;
+                sendBtn.disabled = false;
+            }
+        };
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        textarea.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Stream toggle
+        if (streamBtn) {
+            streamBtn.addEventListener('click', () => {
+                streamingEnabled = !streamingEnabled;
+                streamBtn.textContent = `⚡ STREAM: ${streamingEnabled ? 'ON' : 'OFF'}`;
+                streamBtn.classList.toggle('active', streamingEnabled);
+                localStorage.setItem('lilareyon_stream_preference', streamingEnabled ? 'on' : 'off');
+            });
+
+            // Restore previous preference
+            if (localStorage.getItem('lilareyon_stream_preference') === 'on') {
+                streamingEnabled = true;
+                streamBtn.textContent = '⚡ STREAM: ON';
+                streamBtn.classList.add('active');
+            }
+        }
+
+        // Response style (can later map to temperature / prompt style)
+        if (styleSelect) {
+            styleSelect.addEventListener('change', e => {
+                const style = e.target.value;
+                console.log("Response style:", style);
+                // Future extension point:
+                // if (window.MemoryFabric?.updateSettings) {
+                //     window.MemoryFabric.updateSettings({ responseStyle: style });
+                // }
+            });
+        }
+
+        // DeepSeek perspective (placeholder)
+        if (deepseekBtn) {
+            deepseekBtn.addEventListener('click', () => {
+                alert("DeepSeek perspective mode\n\n(coming soon – will switch model + adjust prompt)");
+                // Future: window.MemoryFabric.updateSettings({ model: 'deepseek-chat' });
+            });
+        }
+
+        // File attachment preview
+        if (fileInput) {
+            fileInput.addEventListener('change', e => {
+                attachedFiles = Array.from(e.target.files);
+                if (attachedFiles.length === 0) {
+                    fileNamesDiv.innerHTML = '';
+                    return;
+                }
+
+                fileNamesDiv.innerHTML = attachedFiles.map(f =>
+                    `<div style="margin:4px 0;">📄 ${f.name} <small>(${(f.size/1024).toFixed(1)} KB)</small></div>`
+                ).join('');
+
+                // Future: actually send files when backend supports vision / file upload
+                console.log("Attached files:", attachedFiles.map(f => f.name));
+            });
+        }
+
+        console.log('✅ Input area initialized');
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initInputArea);
+    } else {
+        initInputArea();
+    }
+})();
+</script>
