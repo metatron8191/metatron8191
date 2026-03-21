@@ -1,51 +1,209 @@
-// In app.js, add or verify this function exists
-window.createNewThread = async function() {
-    if (!window.fabric) {
-        console.error('Fabric not initialized');
-        alert('Fabric not ready');
-        return;
-    }
+<div id="threads-sidebar" class="threads-sidebar">
+    <div class="threads-header">
+        <h3>⟊ THREADS</h3>
+        <button id="sidebar-new-thread" class="new-thread-btn">+ NEW</button>
+    </div>
+    <div id="thread-list-sidebar" class="thread-list-sidebar">
+        <div class="thread-placeholder">⟊ No threads yet ⟊</div>
+    </div>
+    <div class="threads-footer">
+        <span id="thread-count-display">0</span> threads
+    </div>
+</div>
+
+<button id="threads-toggle-btn" class="threads-toggle-btn" style="position: fixed; left: 16px; bottom: 20px; width: 44px; height: 44px; border-radius: 50%; background: #6c5ce7; border: none; color: white; font-size: 20px; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(108,92,231,0.5);">⟊</button>
+
+<style>
+.threads-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: rgba(1, 4, 14, 0.98);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid #6c5ce7;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    font-family: monospace;
+}
+
+.threads-sidebar.open {
+    transform: translateX(0);
+}
+
+.threads-header {
+    padding: 16px;
+    border-bottom: 1px solid #6c5ce7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.threads-header h3 {
+    margin: 0;
+    color: #a88eff;
+    font-size: 12px;
+}
+
+.new-thread-btn {
+    background: #6c5ce7;
+    border: none;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.thread-list-sidebar {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.thread-item-sidebar {
+    padding: 10px;
+    margin: 6px 0;
+    background: rgba(108,92,231,0.2);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.thread-item-sidebar.active {
+    background: #6c5ce7;
+}
+
+.thread-name {
+    color: white;
+    font-size: 12px;
+}
+
+.thread-meta {
+    font-size: 9px;
+    color: #a88eff;
+    margin-top: 4px;
+}
+
+.threads-footer {
+    padding: 12px;
+    border-top: 1px solid #6c5ce7;
+    font-size: 10px;
+    color: #a88eff;
+    text-align: center;
+}
+
+.thread-placeholder {
+    text-align: center;
+    padding: 30px;
+    color: #6c5ce7;
+    font-size: 10px;
+}
+</style>
+
+<script>
+(function() {
+    console.log('🔥 THREADS PANEL LOADED');
     
-    const threadName = prompt('New thread name:', `Thread ${new Date().toLocaleString()}`);
-    if (!threadName) return;
+    // Get elements
+    const sidebar = document.getElementById('threads-sidebar');
+    const toggleBtn = document.getElementById('threads-toggle-btn');
+    const newThreadBtn = document.getElementById('sidebar-new-thread');
     
-    try {
-        // Save current thread messages
-        const currentThreadId = window.fabric.currentThreadId;
-        if (currentThreadId && window.memory) {
-            const allMessages = [...(window.memory.active || []), ...(window.memory.working || [])];
-            for (const msg of allMessages) {
-                await window.fabric.addMemory(msg.content, msg.role, msg.model || 'unknown', {
-                    threadId: currentThreadId,
-                    timestamp: msg.timestamp || Date.now()
-                });
+    // TOGGLE BUTTON - DIRECT CLICK HANDLER
+    if (toggleBtn) {
+        toggleBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('⟊ BUTTON CLICKED!');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+                console.log('Sidebar classes:', sidebar.className);
             }
-        }
-        
-        // Create new thread
-        const newThread = await window.fabric.createThread(threadName);
-        await window.fabric.switchThread(newThread.id);
-        
-        // Clear conversation history for new thread
-        window.conversationHistory[newThread.id] = [];
-        
-        // Clear UI
-        if (window.memory) {
-            window.memory.clearWorking();
-            window.memory.active = [];
-        }
-        if (window.UIRenderer) window.UIRenderer.renderMessages();
-        if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
-        
-        // Refresh thread lists
-        if (window.refreshSidebarThreadList) window.refreshSidebarThreadList();
-        if (window.refreshFabricThreadList) window.refreshFabricThreadList();
-        if (window.updateChainDisplay) window.updateChainDisplay();
-        
-        console.log(`✨ Created new thread: ${threadName}`);
-        
-    } catch (e) {
-        console.error('Failed to create thread:', e);
-        alert('Failed to create thread: ' + e.message);
+        };
+        console.log('✅ Toggle button wired');
+    } else {
+        console.error('❌ Toggle button not found!');
     }
-};
+    
+    // NEW THREAD BUTTON
+    if (newThreadBtn) {
+        newThreadBtn.onclick = async function(e) {
+            e.preventDefault();
+            console.log('➕ NEW THREAD CLICKED');
+            
+            const name = prompt('Thread name:', 'New Thread');
+            if (!name) return;
+            
+            if (window.fabric) {
+                try {
+                    const thread = await window.fabric.createThread(name);
+                    await window.fabric.switchThread(thread.id);
+                    
+                    // Clear chat
+                    if (window.memory) {
+                        window.memory.clearWorking();
+                        window.memory.active = [];
+                    }
+                    if (window.UIRenderer) window.UIRenderer.renderMessages();
+                    
+                    // Refresh thread list
+                    if (window.refreshSidebarThreadList) window.refreshSidebarThreadList();
+                    
+                    console.log('✅ New thread created:', name);
+                } catch (err) {
+                    console.error('Failed:', err);
+                }
+            } else {
+                alert('Fabric not ready');
+            }
+        };
+        console.log('✅ New thread button wired');
+    }
+    
+    // Function to refresh thread list
+    window.refreshSidebarThreadList = async function() {
+        const listEl = document.getElementById('thread-list-sidebar');
+        if (!listEl || !window.fabric) return;
+        
+        try {
+            const threads = await window.fabric.vault.listThreads();
+            const countSpan = document.getElementById('thread-count-display');
+            if (countSpan) countSpan.textContent = threads.length;
+            
+            if (threads.length === 0) {
+                listEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet ⟊</div>';
+                return;
+            }
+            
+            listEl.innerHTML = threads.map(t => `
+                <div class="thread-item-sidebar ${t.id === window.fabric.currentThreadId ? 'active' : ''}" data-id="${t.id}">
+                    <div class="thread-name">${t.name || t.id.slice(0, 8)}</div>
+                    <div class="thread-meta">${new Date(t.updated).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.thread-item-sidebar').forEach(el => {
+                el.onclick = async () => {
+                    const tid = el.dataset.id;
+                    if (tid && tid !== window.fabric.currentThreadId) {
+                        await window.fabric.switchThread(tid);
+                        window.refreshSidebarThreadList();
+                        if (window.loadThreadMessages) window.loadThreadMessages(tid);
+                    }
+                };
+            });
+        } catch(e) { console.error(e); }
+    };
+    
+    // Initial refresh if fabric exists
+    if (window.fabric) {
+        setTimeout(() => {
+            if (window.refreshSidebarThreadList) window.refreshSidebarThreadList();
+        }, 1000);
+    }
+})();
+</script>
