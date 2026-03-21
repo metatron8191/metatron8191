@@ -1,5 +1,5 @@
 // app.js - Lilareyon Noetic Fabric v∞
-// All buttons explicitly wired
+// Complete with all button handlers wired
 
 // ============================================================================
 // GLOBAL STATE
@@ -25,6 +25,7 @@ let streamingEnabled = false;
 let grokSystem = localStorage.getItem('grok_system') || '';
 let dsChatSystem = localStorage.getItem('ds_chat_system') || '';
 let dsReasonerSystem = localStorage.getItem('ds_reasoner_system') || '';
+let claudeSystem = localStorage.getItem('claude_system') || '';
 let overrideSystem = localStorage.getItem('override_system') || '';
 let overrideRemaining = parseInt(localStorage.getItem('override_remaining') || '0');
 
@@ -59,11 +60,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Lilareyon Noetic Fabric initializing...');
     
     // Initialize legacy memory core
-    memory = new AurelianMemory();
-    if (window.UIRenderer) {
-        UIRenderer.init(memory);
+    if (typeof AurelianMemory !== 'undefined') {
+        memory = new AurelianMemory();
+        if (window.UIRenderer) {
+            window.UIRenderer.init(memory);
+        }
+        window.memory = memory;
     }
-    window.memory = memory;
 
     window.responseParams = {
         getCurrent: () => ({
@@ -79,13 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('componentsLoaded', async () => {
         console.log('📡 Components loaded, wiring up UI...');
         
-        // Bind DOM elements
         bindDomElements();
-        
-        // Wire up ALL buttons
         wireAllButtons();
-        
-        // Initialize values
         initializeValues();
         
         // Initialize Fabric
@@ -94,12 +92,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fabric = new NoeticFabric();
                 await fabric.init();
                 console.log('✅ Noetic Fabric initialized');
+                window.fabric = fabric;
                 
-                sync = new MemorySync(fabric);
+                if (typeof MemorySync !== 'undefined') {
+                    sync = new MemorySync(fabric);
+                }
                 
-                if (xaiApiKey) grokClient = new GrokClient(xaiApiKey, fabric);
-                if (deepseekApiKey) deepseekClient = new DeepSeekClient(deepseekApiKey, fabric);
-                if (anthropicApiKey) claudeClient = new ClaudeClient(anthropicApiKey, fabric);
+                if (xaiApiKey && typeof GrokClient !== 'undefined') {
+                    grokClient = new GrokClient(xaiApiKey, fabric);
+                }
+                if (deepseekApiKey && typeof DeepSeekClient !== 'undefined') {
+                    deepseekClient = new DeepSeekClient(deepseekApiKey, fabric);
+                }
+                if (anthropicApiKey && typeof ClaudeClient !== 'undefined') {
+                    claudeClient = new ClaudeClient(anthropicApiKey, fabric);
+                }
+                
+                if (window.refreshFabricThreadList) window.refreshFabricThreadList();
+                if (window.refreshThreadListPanel) window.refreshThreadListPanel();
+                if (window.updateFabricStatus) window.updateFabricStatus();
             }
         } catch (e) {
             console.error('Fabric error:', e);
@@ -110,16 +121,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.GenesisManager.init(memory);
         }
         
-        // Update displays
         updateApiDisplays();
         updateOverrideDisplay();
         updateToolStatus();
+        updateChainDisplay();
         
-        // Initial render
         if (window.UIRenderer) {
-            UIRenderer.renderMessages();
-            UIRenderer.updateMemoryPanels();
+            window.UIRenderer.renderMessages();
+            window.UIRenderer.updateMemoryPanels();
         }
+        
+        if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
         
         console.log('✅ All systems ready');
     });
@@ -133,13 +145,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 function bindDomElements() {
     console.log('🔧 Binding DOM elements...');
     
-    // Main elements
     msgInput = document.getElementById('message-input');
     transmitBtn = document.getElementById('transmit-button');
     fileInput = document.getElementById('file-input');
     fileNames = document.getElementById('file-names');
     
-    // API displays
     xaiDisplay = document.getElementById('xai-display');
     xaiStatus = document.getElementById('xaiStatus');
     deepseekDisplay = document.getElementById('deepseek-display');
@@ -147,11 +157,9 @@ function bindDomElements() {
     claudeDisplay = document.getElementById('claude-display');
     claudeStatus = document.getElementById('claudeStatus');
     
-    // Chain elements
     chainSpan = document.getElementById('currentChain');
     chainCount = document.getElementById('chainCount');
     
-    // Tool buttons
     webSearchBtn = document.getElementById('webSearchBtn');
     xSearchBtn = document.getElementById('xSearchBtn');
     imageGenBtn = document.getElementById('imageGenBtn');
@@ -159,12 +167,10 @@ function bindDomElements() {
     getDeepSeekBtn = document.getElementById('getDeepSeekBtn');
     toolStatus = document.getElementById('tool-status');
     
-    // Model selector
     modelSelector = document.getElementById('model-selector');
     maxTokensSelect = document.getElementById('max-tokens-select');
     responseStyleSelect = document.getElementById('response-style');
     
-    // Advanced controls
     advancedControls = document.getElementById('advanced-controls');
     tempSlider = document.getElementById('temp-slider');
     tempValue = document.getElementById('temp-value');
@@ -177,7 +183,6 @@ function bindDomElements() {
     applyAdvancedBtn = document.getElementById('apply-advanced');
     resetAdvancedBtn = document.getElementById('reset-advanced');
     
-    // System messages
     grokSystemInput = document.getElementById('grok-system');
     dsChatInput = document.getElementById('ds-chat-system');
     dsReasonerInput = document.getElementById('ds-reasoner-system');
@@ -188,7 +193,6 @@ function bindDomElements() {
     resetOverrideBtn = document.getElementById('reset-override');
     applyAllBtn = document.getElementById('apply-system-all');
     
-    // Panel toggles
     toggleMemoryBtn = document.getElementById('toggle-memory');
     systemToggle = document.getElementById('systemToggle');
     systemPanel = document.getElementById('system-panel');
@@ -199,7 +203,6 @@ function bindDomElements() {
     fabricPanel = document.getElementById('fabric-panel');
     fabricClose = document.getElementById('fabric-close');
     
-    // Chain buttons
     newChainBtn = document.getElementById('newChainBtn');
     exportChainBtn = document.getElementById('exportChainBtn');
     
@@ -208,7 +211,7 @@ function bindDomElements() {
 
 
 // ============================================================================
-// WIRE ALL BUTTONS (DIRECT, NO EVENT DELEGATION)
+// WIRE ALL BUTTONS
 // ============================================================================
 
 function wireAllButtons() {
@@ -216,7 +219,6 @@ function wireAllButtons() {
     
     // ========== PANEL TOGGLES ==========
     
-    // Genesis Panel
     if (genesisBtn && genesisPanel) {
         genesisBtn.onclick = (e) => {
             e.preventDefault();
@@ -224,24 +226,21 @@ function wireAllButtons() {
             genesisPanel.classList.remove('hidden');
         };
         console.log('✓ Genesis button wired');
-    } else {
-        console.warn('⚠️ Genesis button or panel not found');
     }
     
     if (genesisClose && genesisPanel) {
         genesisClose.onclick = (e) => {
             e.preventDefault();
-            console.log('❌ Closing Genesis panel');
             genesisPanel.classList.add('hidden');
         };
     }
     
-    // Fabric Panel
     if (fabricBtn && fabricPanel) {
         fabricBtn.onclick = (e) => {
             e.preventDefault();
             console.log('🧠 Opening Fabric panel');
             fabricPanel.classList.remove('hidden');
+            if (window.refreshFabricThreadList) window.refreshFabricThreadList();
         };
         console.log('✓ Fabric button wired');
     }
@@ -253,7 +252,6 @@ function wireAllButtons() {
         };
     }
     
-    // System Panel
     if (systemToggle && systemPanel) {
         systemToggle.onclick = (e) => {
             e.preventDefault();
@@ -263,19 +261,23 @@ function wireAllButtons() {
         console.log('✓ System button wired');
     }
     
-    // Memory Panel (right panel memory tab - handled in right-panel.html)
+    const systemCloseBtn = document.getElementById('close-system');
+    if (systemCloseBtn && systemPanel) {
+        systemCloseBtn.onclick = () => systemPanel.classList.add('hidden');
+    }
+    
     if (toggleMemoryBtn) {
         toggleMemoryBtn.onclick = (e) => {
             e.preventDefault();
-            const memoryPanel = document.getElementById('memory-panel');
-            if (memoryPanel) {
-                memoryPanel.classList.toggle('hidden');
-                if (window.UIRenderer) window.UIRenderer.updateMemoryPanels();
+            const memoryPanelContent = document.getElementById('memory-panel-content');
+            if (memoryPanelContent) {
+                memoryPanelContent.classList.toggle('hidden');
+                if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
             }
         };
     }
     
-    // ========== API KEY BUTTONS (delegation for dynamic elements) ==========
+    // ========== API KEY BUTTONS ==========
     document.addEventListener('click', (e) => {
         const target = e.target;
         if (target.classList && target.classList.contains('set-key-btn')) {
@@ -408,12 +410,13 @@ function wireAllButtons() {
             if (grokSystemInput) grokSystem = grokSystemInput.value;
             if (dsChatInput) dsChatSystem = dsChatInput.value;
             if (dsReasonerInput) dsReasonerSystem = dsReasonerInput.value;
-            if (claudeSystemInput) localStorage.setItem('claude_system', claudeSystemInput.value);
+            if (claudeSystemInput) claudeSystem = claudeSystemInput.value;
             if (overrideInput) overrideSystem = overrideInput.value;
             
             localStorage.setItem('grok_system', grokSystem);
             localStorage.setItem('ds_chat_system', dsChatSystem);
             localStorage.setItem('ds_reasoner_system', dsReasonerSystem);
+            localStorage.setItem('claude_system', claudeSystem);
             localStorage.setItem('override_system', overrideSystem);
             
             if (overrideSystem && overrideRemaining === 0 && overrideCountSelect) {
@@ -441,14 +444,16 @@ function wireAllButtons() {
         newChainBtn.onclick = () => {
             const newId = crypto.randomUUID();
             localStorage.setItem('current_chain', newId);
-            if (chainSpan) chainSpan.textContent = newId.slice(0, 8);
+            updateChainDisplay();
             previousResponseId = null;
             if (memory) {
                 memory.clearWorking();
-                if (window.UIRenderer) UIRenderer.renderMessages();
-                if (window.UIRenderer) UIRenderer.updateMemoryPanels();
+                if (window.UIRenderer) {
+                    window.UIRenderer.renderMessages();
+                    window.UIRenderer.updateMemoryPanels();
+                }
             }
-            if (chainCount) chainCount.textContent = memory?.active.length || 0;
+            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
             if (toolStatus) toolStatus.textContent = '✨ New thread created';
             setTimeout(() => updateToolStatus(), 2000);
         };
@@ -500,7 +505,8 @@ function wireAllButtons() {
                 const result = APIHandlers.parseDeepSeekResponse(data);
                 
                 memory.addWorking(result.content, 'assistant');
-                if (window.UIRenderer) UIRenderer.renderMessages();
+                if (window.UIRenderer) window.UIRenderer.renderMessages();
+                if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
                 if (toolStatus) toolStatus.textContent = '🔮 Perspective received';
                 setTimeout(() => updateToolStatus(), 2000);
             } catch (error) {
@@ -542,29 +548,42 @@ function wireAllButtons() {
             
             const selectedModel = modelSelector?.value || 'grok-4-1-fast-reasoning';
             
-            // Add user message to memory
-            memory.addWorking(content, 'user');
-            if (window.UIRenderer) UIRenderer.renderMessages();
+            if (memory) {
+                memory.addWorking(content, 'user');
+                if (window.UIRenderer) window.UIRenderer.renderMessages();
+            }
             
             transmitBtn.disabled = true;
             transmitBtn.textContent = '...';
             
             try {
                 let reply = '';
+                let modelUsed = '';
                 
                 if (selectedModel === 'grok-4-1-fast-reasoning' && xaiApiKey) {
-                    const messages = [{ role: 'system', content: grokSystem }, { role: 'user', content }];
+                    const systemMsg = grokSystem || 'You are Lilareyon, a sovereign memory core.';
+                    const messages = [{ role: 'system', content: systemMsg }, { role: 'user', content }];
                     const response = await APIHandlers.callGrok(messages, [], false, null, xaiApiKey, {});
                     const data = await response.json();
                     reply = APIHandlers.parseGrokResponse(data);
+                    modelUsed = 'grok-4-1-fast-reasoning';
                 } 
                 else if (selectedModel === 'deepseek-chat' && deepseekApiKey) {
-                    const messages = [{ role: 'system', content: dsChatSystem }, { role: 'user', content }];
+                    const systemMsg = (overrideRemaining > 0 && overrideSystem) ? overrideSystem : (dsChatSystem || 'You are a helpful assistant.');
+                    const messages = [{ role: 'system', content: systemMsg }, { role: 'user', content }];
                     const response = await APIHandlers.callDeepSeek('deepseek-chat', messages, [], false, deepseekApiKey, {});
                     const data = await response.json();
-                    reply = APIHandlers.parseDeepSeekResponse(data).content;
+                    const result = APIHandlers.parseDeepSeekResponse(data);
+                    reply = result.content;
+                    modelUsed = 'deepseek-chat';
+                    if (overrideRemaining > 0 && overrideSystem) {
+                        overrideRemaining--;
+                        localStorage.setItem('override_remaining', overrideRemaining);
+                        updateOverrideDisplay();
+                    }
                 }
                 else if (selectedModel === 'claude-3-opus' && anthropicApiKey) {
+                    const systemMsg = claudeSystem || '';
                     const response = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
                         headers: {
@@ -575,11 +594,13 @@ function wireAllButtons() {
                         body: JSON.stringify({
                             model: 'claude-3-opus-20240229',
                             max_tokens: 2000,
+                            system: systemMsg,
                             messages: [{ role: 'user', content }]
                         })
                     });
                     const data = await response.json();
                     reply = data.content[0].text;
+                    modelUsed = 'claude-3-opus';
                 }
                 else {
                     alert('Please set the API key for the selected model in System Panel');
@@ -588,14 +609,20 @@ function wireAllButtons() {
                     return;
                 }
                 
-                memory.addWorking(reply, 'assistant');
-                if (window.UIRenderer) UIRenderer.renderMessages();
-                if (chainCount) chainCount.textContent = memory.active.length;
+                if (memory) {
+                    const assistantMsg = memory.addWorking(reply, 'assistant');
+                    assistantMsg.model = modelUsed;
+                    if (window.UIRenderer) window.UIRenderer.renderMessages();
+                    if (chainCount) chainCount.textContent = memory.active.length;
+                    if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+                }
                 
             } catch (error) {
                 console.error(error);
-                memory.addWorking(`⚠️ Error: ${error.message}`, 'system');
-                if (window.UIRenderer) UIRenderer.renderMessages();
+                if (memory) {
+                    memory.addWorking(`⚠️ Error: ${error.message}`, 'system');
+                    if (window.UIRenderer) window.UIRenderer.renderMessages();
+                }
             } finally {
                 transmitBtn.disabled = false;
                 transmitBtn.textContent = '↵';
@@ -607,7 +634,6 @@ function wireAllButtons() {
             }
         };
         
-        // Enter key in textarea
         msgInput.onkeydown = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -615,10 +641,39 @@ function wireAllButtons() {
             }
         };
         
-        // Auto-grow textarea
         msgInput.oninput = function() {
             this.style.height = 'auto';
             this.style.height = Math.min(120, this.scrollHeight) + 'px';
+        };
+    }
+    
+    // ========== CLEAR/COMPACT MEMORY BUTTONS ==========
+    
+    const clearMemoryBtn = document.getElementById('clear-memory');
+    if (clearMemoryBtn && memory) {
+        clearMemoryBtn.onclick = () => {
+            memory.clearWorking();
+            if (window.UIRenderer) {
+                window.UIRenderer.renderMessages();
+                window.UIRenderer.updateMemoryPanels();
+            }
+            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+            if (toolStatus) toolStatus.textContent = '🧹 Working memory cleared';
+            setTimeout(() => updateToolStatus(), 2000);
+        };
+    }
+    
+    const compactMemoryBtn = document.getElementById('compact-memory');
+    if (compactMemoryBtn && memory && memory.compact) {
+        compactMemoryBtn.onclick = () => {
+            memory.compact();
+            if (window.UIRenderer) {
+                window.UIRenderer.renderMessages();
+                window.UIRenderer.updateMemoryPanels();
+            }
+            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+            if (toolStatus) toolStatus.textContent = '📦 Memory compacted';
+            setTimeout(() => updateToolStatus(), 2000);
         };
     }
     
@@ -636,15 +691,21 @@ function promptForApiKey(provider) {
         if (provider === 'xai') {
             xaiApiKey = key;
             localStorage.setItem('xai_api_key', key);
-            if (fabric) grokClient = new GrokClient(key, fabric);
+            if (fabric && typeof GrokClient !== 'undefined') {
+                grokClient = new GrokClient(key, fabric);
+            }
         } else if (provider === 'deepseek') {
             deepseekApiKey = key;
             localStorage.setItem('deepseek_api_key', key);
-            if (fabric) deepseekClient = new DeepSeekClient(key, fabric);
+            if (fabric && typeof DeepSeekClient !== 'undefined') {
+                deepseekClient = new DeepSeekClient(key, fabric);
+            }
         } else if (provider === 'anthropic') {
             anthropicApiKey = key;
             localStorage.setItem('anthropic_api_key', key);
-            if (fabric) claudeClient = new ClaudeClient(key, fabric);
+            if (fabric && typeof ClaudeClient !== 'undefined') {
+                claudeClient = new ClaudeClient(key, fabric);
+            }
         }
         updateApiDisplays();
     }
@@ -675,23 +736,23 @@ function updateOverrideDisplay() {
     }
 }
 
+function updateChainDisplay() {
+    const chainId = localStorage.getItem('current_chain') || '';
+    if (chainSpan) chainSpan.textContent = chainId.slice(0, 8) || '——';
+    if (chainCount && memory) chainCount.textContent = memory.active.length;
+}
+
 function initializeValues() {
-    // Load stored system messages
     if (grokSystemInput) grokSystemInput.value = grokSystem;
     if (dsChatInput) dsChatInput.value = dsChatSystem;
     if (dsReasonerInput) dsReasonerInput.value = dsReasonerSystem;
+    if (claudeSystemInput) claudeSystemInput.value = claudeSystem;
     if (overrideInput) overrideInput.value = overrideSystem;
     
     updateOverrideDisplay();
     updateApiDisplays();
+    updateChainDisplay();
     
-    // Restore chain ID
-    let currentChainId = localStorage.getItem('current_chain') || crypto.randomUUID();
-    localStorage.setItem('current_chain', currentChainId);
-    if (chainSpan) chainSpan.textContent = currentChainId.slice(0, 8);
-    if (chainCount) chainCount.textContent = memory?.active.length || 0;
-    
-    // Load response params
     const saved = localStorage.getItem('response_params');
     if (saved) {
         try {
@@ -748,8 +809,60 @@ function saveResponseParams() {
     }));
 }
 
+// ============================================================================
+// RIGHT PANEL MEMORY UPDATE
+// ============================================================================
+
+window.updateRightPanelMemoryLists = function() {
+    if (!memory) return;
+    
+    const workingList = document.getElementById('working-memory-list');
+    const activeList = document.getElementById('active-memory-list');
+    const workingCount = document.getElementById('working-count');
+    const activeCount = document.getElementById('active-count');
+    
+    if (workingList) {
+        const workingMemories = memory.working.slice().reverse();
+        if (workingMemories.length === 0) {
+            workingList.innerHTML = '<div class="memory-placeholder">⟊ No active memories ⟊</div>';
+        } else {
+            workingList.innerHTML = workingMemories.map(m => `
+                <div class="memory-item ${m.role}">
+                    <div style="font-size: 8px; color: #6c5ce7;">${m.role.toUpperCase()} · ${new Date(m.timestamp).toLocaleTimeString()}</div>
+                    <div style="margin-top: 4px;">${escapeHtmlDisplay(m.content.substring(0, 100))}${m.content.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+        }
+        if (workingCount) workingCount.textContent = memory.working.length;
+    }
+    
+    if (activeList) {
+        const activeMemories = memory.active.slice().reverse();
+        if (activeMemories.length === 0) {
+            activeList.innerHTML = '<div class="memory-placeholder">⟊ Archive empty ⟊</div>';
+        } else {
+            activeList.innerHTML = activeMemories.map(m => `
+                <div class="memory-item ${m.role}">
+                    <div style="font-size: 8px; color: #6c5ce7;">${m.role.toUpperCase()} · ${new Date(m.timestamp).toLocaleTimeString()}</div>
+                    <div style="margin-top: 4px;">${escapeHtmlDisplay(m.content.substring(0, 100))}${m.content.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+        }
+        if (activeCount) activeCount.textContent = memory.active.length;
+    }
+};
+
+function escapeHtmlDisplay(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
 // Expose globally
 window.promptForApiKey = promptForApiKey;
-window.transmit = () => transmitBtn?.click();
-window.memory = () => memory;
-window.fabric = () => fabric;
+window.updateChainDisplay = updateChainDisplay;
+window.updateRightPanelMemoryLists = window.updateRightPanelMemoryLists;
