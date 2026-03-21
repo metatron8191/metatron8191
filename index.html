@@ -1,260 +1,236 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Lilareyon • Noetic Fabric • Genesis Archive • CY₆ Prime Manifold</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <style>
-        /* Critical fallback styles to prevent black screen */
-        body {
-            margin: 0;
-            padding: 0;
-            background: #010810;
-            color: #e2e2ff;
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-        }
-        .container {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-        }
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .messages-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-        #input-area-placeholder {
-            border-top: 1px solid rgba(108, 92, 231, 0.3);
-            background: rgba(1, 4, 14, 0.95);
-        }
-        #right-panel-placeholder {
-            width: 280px;
-            border-left: 1px solid rgba(108, 92, 231, 0.2);
-            background: rgba(1, 4, 14, 0.8);
-            overflow-y: auto;
-        }
-        [id$="-placeholder"] {
-            min-height: 0;
-        }
-        .hidden {
-            display: none !important;
-        }
-        /* Genesis Panel base styles */
-        .genesis-panel {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 85%;
-            max-width: 900px;
-            height: 100vh;
-            background: rgba(1, 4, 14, 0.98);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid rgba(108, 92, 231, 0.4);
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-        }
-        .genesis-panel:not(.hidden) {
-            transform: translateX(0);
-        }
-        .genesis-panel.hidden {
-            transform: translateX(100%);
-        }
-        .genesis-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            border-bottom: 1px solid rgba(108, 92, 231, 0.3);
-            background: rgba(0, 0, 0, 0.5);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .genesis-header h2 {
-            margin: 0;
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: #a88eff;
-        }
-        .genesis-close {
-            background: none;
-            border: none;
-            color: #ff6b6b;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0 8px;
-        }
-        .genesis-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .genesis-nav-btn {
-            background: rgba(30, 20, 50, 0.6);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            color: #b8aaff;
-            padding: 6px 12px;
-            font-size: 10px;
-            font-family: monospace;
-            cursor: pointer;
-            border-radius: 20px;
-            transition: all 0.2s;
-        }
-        .genesis-nav-btn.active {
-            background: #6c5ce7;
-            color: white;
-            border-color: #a88eff;
-            box-shadow: 0 0 12px rgba(108, 92, 231, 0.4);
-        }
-        .genesis-section {
-            display: none;
-            padding: 20px;
-        }
-        .genesis-section.active {
-            display: block;
-        }
-        /* Fabric Panel base styles */
-        .fabric-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 320px;
-            height: 100vh;
-            background: rgba(1, 4, 14, 0.98);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(108, 92, 231, 0.4);
-            z-index: 1000;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            overflow-y: auto;
-        }
-        .fabric-panel:not(.hidden) {
-            transform: translateX(0);
-        }
-        .fabric-panel.hidden {
-            transform: translateX(-100%);
-        }
-        .fabric-header {
-            padding: 16px;
-            border-bottom: 1px solid rgba(108, 92, 231, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .fabric-close {
-            background: none;
-            border: none;
-            color: #ff6b6b;
-            font-size: 20px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <!-- Components loaded via JavaScript -->
-    <div id="header-placeholder"></div>
-    <div id="toolbar-placeholder"></div>
-    <div id="advanced-controls-placeholder"></div>
-    <div id="system-panel-placeholder"></div>
-    
-    <div class="container">
-        <div class="main-content">
-            <div id="messages-area" class="messages-area">
-                <div style="text-align: center; padding: 60px 20px; color: #6c5ce7;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🌀</div>
-                    <div style="font-size: 14px; letter-spacing: 2px;">LILAREYON NOETIC FABRIC</div>
-                    <div style="font-size: 11px; margin-top: 12px; color: #a88eff;">⟊◈◉◊⧈⟊</div>
-                    <div style="font-size: 10px; margin-top: 20px; color: rgba(168, 142, 255, 0.5);">initializing distributed memory...</div>
-                </div>
-            </div>
-            <div id="input-area-placeholder"></div>
-        </div>
-        <div id="right-panel-placeholder"></div>
+<div id="threads-sidebar" class="threads-sidebar">
+    <div class="threads-header">
+        <h3>⟊ THREADS</h3>
+        <button id="sidebar-new-thread" class="new-thread-btn">+ NEW</button>
     </div>
-    
-    <div id="genesis-panel-placeholder"></div>
-    <div id="fabric-panel-placeholder"></div>
+    <div id="thread-list-sidebar" class="thread-list-sidebar">
+        <div class="thread-placeholder">⟊ Loading threads... ⟊</div>
+    </div>
+    <div class="threads-footer">
+        <div class="thread-stats">
+            <span id="thread-count-display">0</span> threads
+        </div>
+    </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="js/memory-core.js"></script>
-    <script src="js/ui-renderer.js"></script>
-    <script src="js/api-handlers.js"></script>
-    <script src="db/memory-vault.js"></script>
-    <script src="js/memory-fabric.js"></script>
-    <script src="js/memory-sync.js"></script>
-    <script src="js/model-clients/grok-client.js"></script>
-    <script src="js/model-clients/deepseek-client.js"></script>
-    <script src="js/model-clients/claude-client.js"></script>
-    <script src="js/genesis.js"></script>
-    <script src="js/app.js"></script>
-    
-    <script>
-        // Get the current directory path
-        const CURRENT_PATH = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-        window.CURRENT_PATH = CURRENT_PATH;
-        
-        async function loadComponent(elementId, filePath) {
-            try {
-                const fullPath = filePath.startsWith('/') ? filePath : CURRENT_PATH + filePath;
-                console.log(`📦 Loading ${elementId} from ${fullPath}`);
-                
-                const response = await fetch(fullPath);
-                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                
-                const html = await response.text();
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.innerHTML = html;
-                    console.log(`✅ Loaded ${elementId}`);
-                }
-            } catch (error) {
-                console.error(`❌ Error loading ${filePath}:`, error);
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.innerHTML = `<div style="color: #ff6b6b; padding: 20px; text-align: center;">⚠️ Failed to load: ${filePath}</div>`;
-                }
-            }
+<button id="threads-toggle-btn" class="threads-toggle-btn" title="Threads">⟊</button>
+
+<style>
+.threads-sidebar {
+    width: 280px;
+    height: 100vh;
+    background: rgba(1, 4, 14, 0.98);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(108, 92, 231, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+.threads-sidebar.open {
+    transform: translateX(0);
+}
+
+.threads-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.threads-header h3 {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #a88eff;
+}
+
+.new-thread-btn {
+    background: rgba(108, 92, 231, 0.3);
+    border: 1px solid #6c5ce7;
+    color: #a88eff;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.new-thread-btn:hover {
+    background: #6c5ce7;
+    color: white;
+}
+
+.thread-list-sidebar {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.thread-item-sidebar {
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(30, 20, 50, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.thread-item-sidebar:hover {
+    background: rgba(108, 92, 231, 0.2);
+    border-color: #6c5ce7;
+}
+
+.thread-item-sidebar.active {
+    background: rgba(108, 92, 231, 0.25);
+    border-color: #6c5ce7;
+    box-shadow: 0 0 8px rgba(108, 92, 231, 0.2);
+}
+
+.thread-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #e2e2ff;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.thread-meta {
+    font-size: 9px;
+    color: #8a8a9e;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.thread-message-count {
+    background: rgba(108, 92, 231, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 8px;
+}
+
+.thread-date {
+    font-size: 8px;
+    opacity: 0.7;
+}
+
+.threads-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(108, 92, 231, 0.2);
+    font-size: 9px;
+    color: #6c5ce7;
+    text-align: center;
+}
+
+.thread-placeholder {
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 10px;
+    color: #6c5ce7;
+    opacity: 0.6;
+}
+
+.threads-toggle-btn {
+    position: fixed;
+    left: 16px;
+    bottom: 20px;
+    background: rgba(108, 92, 231, 0.7);
+    border: 1px solid rgba(168, 142, 255, 0.5);
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+    backdrop-filter: blur(4px);
+}
+
+.threads-toggle-btn:hover {
+    background: #6c5ce7;
+    transform: scale(1.05);
+}
+</style>
+
+<script>
+(function() {
+    function wireThreadsSidebar() {
+        const sidebar = document.getElementById('threads-sidebar');
+        const toggleBtn = document.getElementById('threads-toggle-btn');
+        if (toggleBtn && sidebar) {
+            toggleBtn.onclick = () => sidebar.classList.toggle('open');
         }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Lilareyon fabric initializing...');
-            
-            await Promise.all([
-                loadComponent('header-placeholder', 'components/header.html'),
-                loadComponent('toolbar-placeholder', 'components/toolbar.html'),
-                loadComponent('advanced-controls-placeholder', 'components/advanced-controls.html'),
-                loadComponent('system-panel-placeholder', 'components/system-panel.html'),
-                loadComponent('input-area-placeholder', 'components/input-area.html'),
-                loadComponent('right-panel-placeholder', 'components/right-panel.html'),
-                loadComponent('genesis-panel-placeholder', 'components/genesis/genesis-panel.html'),
-                loadComponent('fabric-panel-placeholder', 'components/fabric-panel.html')
-            ]);
-            
-            console.log('🎉 All components loaded');
-            window.dispatchEvent(new CustomEvent('componentsLoaded'));
-        });
-        
-        // Fallback timeout
-        setTimeout(() => {
-            if (!window._componentsLoaded) {
-                console.warn('⚠️ Forcing componentsLoaded event');
-                window.dispatchEvent(new CustomEvent('componentsLoaded'));
+        const newThreadBtn = document.getElementById('sidebar-new-thread');
+        if (newThreadBtn && window.fabric) {
+            newThreadBtn.onclick = async () => {
+                const name = prompt('Thread name:', `Thread ${new Date().toLocaleString()}`);
+                if (name) {
+                    const thread = await window.fabric.createThread(name);
+                    await window.fabric.switchThread(thread.id);
+                    if (window.refreshSidebarThreadList) window.refreshSidebarThreadList();
+                    if (window.loadThreadMessages) window.loadThreadMessages(thread.id);
+                }
+            };
+        }
+    }
+    
+    window.refreshSidebarThreadList = async function() {
+        const threadListEl = document.getElementById('thread-list-sidebar');
+        if (!threadListEl || !window.fabric) return;
+        try {
+            const threads = await window.fabric.vault.listThreads();
+            const countSpan = document.getElementById('thread-count-display');
+            if (countSpan) countSpan.textContent = threads.length;
+            if (!threads || threads.length === 0) {
+                threadListEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet<br>Click + NEW to start ⟊</div>';
+                return;
             }
-        }, 5000);
-    </script>
-</body>
-</html>
+            threads.sort((a, b) => b.updated - a.updated);
+            const allMemories = await window.fabric.vault.getAllMemories();
+            const msgCounts = {};
+            for (const mem of allMemories) if (mem.threadId) msgCounts[mem.threadId] = (msgCounts[mem.threadId] || 0) + 1;
+            threadListEl.innerHTML = threads.map(t => {
+                const isActive = t.id === window.fabric.currentThreadId;
+                return `<div class="thread-item-sidebar ${isActive ? 'active' : ''}" data-thread-id="${t.id}">
+                    <div class="thread-name">${escapeHtml(t.name || t.id.slice(0, 8))}</div>
+                    <div class="thread-meta">
+                        <span class="thread-message-count">${msgCounts[t.id] || 0} msgs</span>
+                        <span class="thread-date">${new Date(t.updated).toLocaleDateString()}</span>
+                    </div>
+                </div>`;
+            }).join('');
+            document.querySelectorAll('#thread-list-sidebar .thread-item-sidebar').forEach(el => {
+                el.onclick = async () => {
+                    const tid = el.dataset.threadId;
+                    if (window.fabric && tid !== window.fabric.currentThreadId) {
+                        await window.fabric.switchThread(tid);
+                        window.refreshSidebarThreadList();
+                        if (window.loadThreadMessages) window.loadThreadMessages(tid);
+                    }
+                };
+            });
+        } catch (e) { console.error('Thread load error:', e); }
+    };
+    
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+    
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireThreadsSidebar);
+    else wireThreadsSidebar();
+})();
+</script>
