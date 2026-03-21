@@ -1,100 +1,97 @@
-class AurelianMemory {
-    constructor() {
-        this.L1_KEY = 'aurelian_working';
-        this.L2_KEY = 'aurelian_active';
-        this.working = JSON.parse(sessionStorage.getItem(this.L1_KEY)) || [];
-        this.active = JSON.parse(localStorage.getItem(this.L2_KEY)) || [];
-        this.sortActive();
-    }
+// js/memory-core.js – v2.0
+window.MemoryCore = {
+    state: {
+        threads: [],
+        currentThreadId: null,
+        currentResponseId: null,
+        settings: { temperature: 0.7, model: 'grok-4', stateful: true }
+    },
 
-    addWorking(content, role = 'user', attachments = []) {
-        const msg = {
-            id: crypto.randomUUID(),
-            role,
-            content,
-            attachments,
-            ts: Date.now(),
-            time: new Date().toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            reasoning: null,
-            model: null
+    init() {
+        this.loadFromStorage();
+        console.log('🧠 Memory Core v2.0 initialized');
+    },
+
+    loadFromStorage() {
+        const saved = localStorage.getItem('lilareyon_threads');
+        if (saved) this.state.threads = JSON.parse(saved);
+        
+        const settings = localStorage.getItem('lilareyon_settings');
+        if (settings) this.state.settings = { ...this.state.settings, ...JSON.parse(settings) };
+    },
+
+    saveToStorage() {
+        localStorage.setItem('lilareyon_threads', JSON.stringify(this.state.threads));
+        localStorage.setItem('lilareyon_settings', JSON.stringify(this.state.settings));
+    },
+
+    createThread(title = 'New Thread') {
+        const thread = {
+            id: 'thread_' + Date.now(),
+            title,
+            preview: 'Empty thread',
+            createdAt: new Date().toISOString(),
+            messages: [],
+            responseChain: [],
+            settings: { ...this.state.settings } // per-thread override
         };
-        this.working.push(msg);
-        this.persistWorking();
-        return msg;
-    }
+        this.state.threads.unshift(thread);
+        this.state.currentThreadId = thread.id;
+        this.state.currentResponseId = null;
+        this.saveToStorage();
+        return thread;
+    },
 
-    persistWorking() {
-        sessionStorage.setItem(this.L1_KEY, JSON.stringify(this.working));
-    }
+    getCurrentThread() {
+        return this.state.threads.find(t => t.id === this.state.currentThreadId);
+    },
 
-    clearWorking() {
-        this.working = [];
-        this.persistWorking();
-    }
-
-    addActive(content, attachments = [], meta = {}) {
-        const mem = {
-            id: crypto.randomUUID(),
-            content,
-            attachments,
-            freq: 1,
-            last: Date.now(),
-            created: Date.now(),
-            meta
-        };
-        this.active.push(mem);
-        this.sortActive();
-        this.trimActive();
-        this.persistActive();
-        return mem;
-    }
-
-    accessActive(id) {
-        const mem = this.active.find(m => m.id === id);
-        if (mem) {
-            mem.freq++;
-            mem.last = Date.now();
-            this.sortActive();
-            this.persistActive();
+    addMessageToThread(message) {
+        const thread = this.getCurrentThread();
+        if (thread) {
+            thread.messages.push(message);
+            thread.preview = message.content?.substring(0, 60) || 'Empty';
+            this.saveToStorage();
         }
-        return mem;
-    }
+    },
 
-    sortActive() {
-        this.active.sort((a, b) => b.freq - a.freq || b.last - a.last);
-    }
+    setCurrentResponseId(id) {
+        this.state.currentResponseId = id;
+        const thread = this.getCurrentThread();
+        if (thread && id) thread.responseChain.push(id);
+        this.saveToStorage();
+    },
 
-    trimActive() {
-        if (this.active.length > 100) {
-            this.active = this.active.slice(0, 100);
+    switchThread(threadId) {
+        const thread = this.state.threads.find(t => t.id === threadId);
+        if (thread) {
+            this.state.currentThreadId = threadId;
+            this.state.currentResponseId = thread.responseChain[thread.responseChain.length - 1] || null;
+            this.saveToStorage();
+            return thread;
         }
-    }
+        return null;
+    },
 
-    persistActive() {
-        localStorage.setItem(this.L2_KEY, JSON.stringify(this.active));
-    }
-
-    getTopActive(n = 8) {
-        return this.active.slice(0, n);
-    }
-
-    buildContext() {
-        const top = this.getTopActive(3);
-        const recent = this.working.slice(-2);
-        let ctx = '=== MEMORY CONTEXT ===\n';
-        if (top.length) {
-            ctx += 'FREQUENT:\n';
-            top.forEach(m => ctx += `- [${m.freq}x] ${m.content.substring(0, 100)}\n`);
+    clearCurrentThread() {
+        const thread = this.getCurrentThread();
+        if (thread) {
+            thread.messages = [];
+            thread.responseChain = [];
+            thread.preview = 'Empty thread';
+            this.state.currentResponseId = null;
+            this.saveToStorage();
         }
-        if (recent.length) {
-            ctx += '\nRECENT:\n';
-            recent.forEach(m => ctx += `- ${m.role}: ${m.content.substring(0, 100)}\n`);
-        }
-        return ctx;
-    }
-}
+    },
 
-window.AurelianMemory = AurelianMemory;
+    updateSettings(settings, threadOnly = false) {
+        if (!threadOnly) this.state.settings = { ...this.state.settings, ...settings };
+        const thread = this.getCurrentThread();
+        if (thread) thread.settings = { ...thread.settings, ...settings };
+        this.saveToStorage();
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.MemoryCore.init());
+} else window.MemoryCore.init();
