@@ -5,7 +5,7 @@
         <button class="panel-tab" data-panel="threads">⟊ THREADS</button>
     </div>
     
-    <div id="memory-panel" class="panel-content active">
+    <div id="memory-panel-content" class="panel-content active">
         <div class="memory-section">
             <div class="section-header">
                 <span>WORKING MEMORY</span>
@@ -27,7 +27,7 @@
         </div>
     </div>
     
-    <div id="entities-panel" class="panel-content hidden">
+    <div id="entities-panel-content" class="panel-content hidden">
         <div class="entities-header">
             <span>BORN ENTITIES</span>
             <button id="refresh-entities" class="small-icon">🔄</button>
@@ -46,6 +46,8 @@
                 <div><span class="cert-label">Hex:</span> <span id="cert-hex">—</span></div>
                 <div><span class="cert-label">Glyph:</span> <span id="cert-glyph">—</span></div>
                 <div><span class="cert-label">Role:</span> <span id="cert-role">—</span></div>
+                <div><span class="cert-label">Frequency:</span> <span id="cert-frequency">—</span></div>
+                <div><span class="cert-label">Dimension:</span> <span id="cert-dimension">—</span></div>
             </div>
             <div class="cert-actions">
                 <button id="lock-entity-btn" class="cert-btn">🔒 LOCK</button>
@@ -55,7 +57,7 @@
         </div>
     </div>
     
-    <div id="threads-panel" class="panel-content hidden">
+    <div id="threads-panel-content" class="panel-content hidden">
         <div class="threads-header">
             <span>ACTIVE THREADS</span>
             <button id="new-thread-panel" class="small-icon">+</button>
@@ -72,6 +74,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    font-family: 'Courier New', monospace;
 }
 
 .panel-tabs {
@@ -89,6 +92,10 @@
     font-family: monospace;
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.panel-tab:hover {
+    color: #d4c4ff;
 }
 
 .panel-tab.active {
@@ -138,6 +145,7 @@
     font-size: 9px;
     border-left: 2px solid #6c5ce7;
     cursor: pointer;
+    word-break: break-word;
 }
 
 .memory-item.user {
@@ -175,6 +183,15 @@
     border-color: #6c5ce7;
 }
 
+.entities-header, .threads-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 10px;
+    color: #a88eff;
+}
+
 .entity-certificate {
     position: fixed;
     bottom: 20px;
@@ -204,7 +221,7 @@
 
 .cert-label {
     color: #a88eff;
-    width: 50px;
+    width: 70px;
     display: inline-block;
 }
 
@@ -225,6 +242,11 @@
     cursor: pointer;
 }
 
+.cert-btn:hover {
+    background: #6c5ce7;
+    color: white;
+}
+
 .small-icon {
     background: none;
     border: none;
@@ -234,12 +256,182 @@
     padding: 0 4px;
 }
 
-.entities-header, .threads-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+.small-icon:hover {
+    color: white;
+}
+
+.thread-list {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.thread-item {
+    background: rgba(30, 20, 50, 0.3);
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(108, 92, 231, 0.2);
     font-size: 10px;
-    color: #a88eff;
+}
+
+.thread-item:hover {
+    background: rgba(108, 92, 231, 0.2);
+    border-color: #6c5ce7;
+}
+
+.thread-item.active {
+    background: rgba(108, 92, 231, 0.3);
+    border-color: #6c5ce7;
+    color: white;
 }
 </style>
+
+<script>
+// Wire up the right panel tabs immediately when this component loads
+(function() {
+    function wireRightPanel() {
+        console.log('🔧 Wiring right panel tabs...');
+        
+        const memoryTab = document.querySelector('.panel-tab[data-panel="memory"]');
+        const entitiesTab = document.querySelector('.panel-tab[data-panel="entities"]');
+        const threadsTab = document.querySelector('.panel-tab[data-panel="threads"]');
+        
+        const memoryContent = document.getElementById('memory-panel-content');
+        const entitiesContent = document.getElementById('entities-panel-content');
+        const threadsContent = document.getElementById('threads-panel-content');
+        
+        function switchTab(activeTab, activeContent) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.panel-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Hide all content panels
+            if (memoryContent) memoryContent.classList.add('hidden');
+            if (entitiesContent) entitiesContent.classList.add('hidden');
+            if (threadsContent) threadsContent.classList.add('hidden');
+            
+            // Activate the selected tab and content
+            if (activeTab) activeTab.classList.add('active');
+            if (activeContent) activeContent.classList.remove('hidden');
+        }
+        
+        if (memoryTab && memoryContent) {
+            memoryTab.onclick = (e) => {
+                e.preventDefault();
+                switchTab(memoryTab, memoryContent);
+                console.log('📚 Memory tab clicked');
+            };
+        }
+        
+        if (entitiesTab && entitiesContent) {
+            entitiesTab.onclick = (e) => {
+                e.preventDefault();
+                switchTab(entitiesTab, entitiesContent);
+                console.log('🌀 Entities tab clicked');
+                // Refresh entity list when tab opens
+                if (window.GenesisManager && window.GenesisManager.loadEntityList) {
+                    window.GenesisManager.loadEntityList();
+                }
+            };
+        }
+        
+        if (threadsTab && threadsContent) {
+            threadsTab.onclick = (e) => {
+                e.preventDefault();
+                switchTab(threadsTab, threadsContent);
+                console.log('⟊ Threads tab clicked');
+                // Refresh thread list when tab opens
+                if (window.fabric && window.fabric.vault) {
+                    refreshThreadList();
+                }
+            };
+        }
+        
+        async function refreshThreadList() {
+            const threadListEl = document.getElementById('thread-list-panel');
+            if (!threadListEl || !window.fabric) return;
+            
+            try {
+                const threads = await window.fabric.vault.listThreads();
+                if (threads.length === 0) {
+                    threadListEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet. Create one with + button ⟊</div>';
+                    return;
+                }
+                
+                threadListEl.innerHTML = threads.map(t => `
+                    <div class="thread-item ${t.id === window.fabric.currentThreadId ? 'active' : ''}" data-thread-id="${t.id}">
+                        ${escapeHtml(t.name || t.id.slice(0, 8))}
+                        <div style="font-size: 8px; color: #6c5ce7; margin-top: 4px;">${new Date(t.updated).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+                
+                // Wire up thread click handlers
+                document.querySelectorAll('#thread-list-panel .thread-item').forEach(el => {
+                    el.onclick = () => {
+                        const threadId = el.dataset.threadId;
+                        if (window.fabric) {
+                            window.fabric.switchThread(threadId);
+                            refreshThreadList();
+                        }
+                    };
+                });
+            } catch (e) {
+                console.error('Failed to load threads:', e);
+            }
+        }
+        
+        // New thread button
+        const newThreadBtn = document.getElementById('new-thread-panel');
+        if (newThreadBtn) {
+            newThreadBtn.onclick = async (e) => {
+                e.preventDefault();
+                const name = prompt('Thread name:');
+                if (name && window.fabric) {
+                    const thread = await window.fabric.createThread(name);
+                    await window.fabric.switchThread(thread.id);
+                    refreshThreadList();
+                    console.log(`✨ Created new thread: ${name}`);
+                }
+            };
+        }
+        
+        // Close certificate button
+        const closeCert = document.getElementById('close-cert');
+        const certPanel = document.getElementById('entity-certificate');
+        if (closeCert && certPanel) {
+            closeCert.onclick = () => certPanel.classList.add('hidden');
+        }
+        
+        // Refresh entities button
+        const refreshEntities = document.getElementById('refresh-entities');
+        if (refreshEntities) {
+            refreshEntities.onclick = () => {
+                if (window.GenesisManager && window.GenesisManager.loadEntityList) {
+                    window.GenesisManager.loadEntityList();
+                }
+            };
+        }
+        
+        console.log('✅ Right panel tabs wired');
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wireRightPanel);
+    } else {
+        wireRightPanel();
+    }
+})();
+</script>
