@@ -12,6 +12,7 @@
     <div id="toolbar-placeholder"></div>
     <div id="advanced-controls-placeholder"></div>
     <div id="system-panel-placeholder"></div>
+    <div id="fabric-panel-placeholder"></div>
     
     <div class="container">
         <div class="main-content">
@@ -29,6 +30,12 @@
     <script src="js/api-handlers.js"></script>
     <script src="js/genesis.js"></script>
     <script src="js/app.js"></script>
+    <script src="db/memory-vault.js"></script>
+    <script src="js/memory-fabric.js"></script>
+    <script src="js/memory-sync.js"></script>
+    <script src="js/model-clients/grok-client.js"></script>
+    <script src="js/model-clients/deepseek-client.js"></script>
+    <script src="js/model-clients/claude-client.js"></script>
     <script>
         // Get the current directory path
         const CURRENT_PATH = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
@@ -60,6 +67,7 @@
                 loadComponent('input-area-placeholder', 'components/input-area.html'),
                 loadComponent('right-panel-placeholder', 'components/right-panel.html'),
                 loadComponent('genesis-panel-placeholder', 'components/genesis/genesis-panel.html')
+                loadComponent('fabric-panel-placeholder', 'components/fabric-panel.html')
             ]);
             
             window.dispatchEvent(new Event('componentsLoaded'));
