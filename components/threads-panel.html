@@ -13,12 +13,15 @@
     </div>
 </div>
 
+<button id="threads-toggle-btn" class="threads-toggle-btn" title="Threads">⟊</button>
+
 <style>
 .threads-sidebar {
-    width: 260px;
+    width: 280px;
     height: 100vh;
-    background: rgba(1, 4, 14, 0.95);
-    border-right: 1px solid rgba(108, 92, 231, 0.3);
+    background: rgba(1, 4, 14, 0.98);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(108, 92, 231, 0.4);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -26,9 +29,9 @@
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 50;
+    z-index: 100;
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 
 .threads-sidebar.open {
@@ -36,11 +39,12 @@
 }
 
 .threads-header {
-    padding: 16px;
+    padding: 16px 20px;
     border-bottom: 1px solid rgba(108, 92, 231, 0.3);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .threads-header h3 {
@@ -69,47 +73,56 @@
 .thread-list-sidebar {
     flex: 1;
     overflow-y: auto;
-    padding: 8px;
+    padding: 12px;
 }
 
 .thread-item-sidebar {
-    padding: 10px 12px;
-    margin: 4px 0;
-    border-radius: 8px;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
     background: rgba(30, 20, 50, 0.3);
-    border-left: 2px solid transparent;
+    border: 1px solid rgba(108, 92, 231, 0.2);
 }
 
 .thread-item-sidebar:hover {
     background: rgba(108, 92, 231, 0.2);
+    border-color: #6c5ce7;
 }
 
 .thread-item-sidebar.active {
     background: rgba(108, 92, 231, 0.25);
-    border-left-color: #6c5ce7;
+    border-color: #6c5ce7;
+    box-shadow: 0 0 8px rgba(108, 92, 231, 0.2);
 }
 
 .thread-name {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     color: #e2e2ff;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     word-break: break-word;
 }
 
 .thread-meta {
-    font-size: 8px;
+    font-size: 9px;
     color: #8a8a9e;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
-.thread-count {
+.thread-message-count {
     background: rgba(108, 92, 231, 0.3);
-    padding: 0 6px;
-    border-radius: 10px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 8px;
+}
+
+.thread-date {
+    font-size: 8px;
+    opacity: 0.7;
 }
 
 .threads-footer {
@@ -122,44 +135,43 @@
 
 .thread-placeholder {
     text-align: center;
-    padding: 30px;
-    font-size: 9px;
+    padding: 30px 20px;
+    font-size: 10px;
     color: #6c5ce7;
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
-/* Toggle button for sidebar */
 .threads-toggle-btn {
     position: fixed;
     left: 16px;
     bottom: 20px;
-    background: rgba(108, 92, 231, 0.6);
-    border: none;
+    background: rgba(108, 92, 231, 0.7);
+    border: 1px solid rgba(168, 142, 255, 0.5);
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
-    z-index: 60;
+    z-index: 90;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
     box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+    backdrop-filter: blur(4px);
 }
 
 .threads-toggle-btn:hover {
     background: #6c5ce7;
     transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
 }
 </style>
 
 <script>
 (function() {
     function wireThreadsSidebar() {
-        console.log('🔧 Wiring threads sidebar...');
-        
         const sidebar = document.getElementById('threads-sidebar');
         const toggleBtn = document.getElementById('threads-toggle-btn');
         
@@ -169,22 +181,16 @@
             };
         }
         
-        // New thread button
         const newThreadBtn = document.getElementById('sidebar-new-thread');
-        if (newThreadBtn && window.fabric) {
+        if (newThreadBtn) {
             newThreadBtn.onclick = async () => {
                 const name = prompt('Thread name:', `Thread ${new Date().toLocaleString()}`);
-                if (name) {
+                if (name && window.fabric) {
                     const thread = await window.fabric.createThread(name);
                     await window.fabric.switchThread(thread.id);
-                    window.refreshSidebarThreadList();
+                    if (window.refreshSidebarThreadList) window.refreshSidebarThreadList();
+                    if (window.loadThreadMessages) window.loadThreadMessages(thread.id);
                     if (window.updateChainDisplay) window.updateChainDisplay();
-                    if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
-                    // Clear chat area
-                    if (window.memory) {
-                        window.memory.clearWorking();
-                        if (window.UIRenderer) window.UIRenderer.renderMessages();
-                    }
                 }
             };
         }
@@ -202,17 +208,104 @@
             if (threadCountSpan) threadCountSpan.textContent = threads.length;
             
             if (!threads || threads.length === 0) {
-                threadListEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet. Click + NEW ⟊</div>';
+                threadListEl.innerHTML = '<div class="thread-placeholder">⟊ No threads yet<br>Click + NEW to start ⟊</div>';
                 return;
             }
             
-            // Sort by updated date, most recent first
             threads.sort((a, b) => b.updated - a.updated);
             
+            // Get message counts for each thread
+            const allMemories = await window.fabric.vault.getAllMemories();
+            const threadMessageCounts = {};
+            for (const mem of allMemories) {
+                if (mem.threadId) {
+                    threadMessageCounts[mem.threadId] = (threadMessageCounts[mem.threadId] || 0) + 1;
+                }
+            }
+            
             threadListEl.innerHTML = threads.map(t => {
-                const messageCount = window.memory ? window.memory.active.filter(m => m.threadId === t.id).length : 0;
+                const messageCount = threadMessageCounts[t.id] || 0;
+                const isActive = t.id === window.fabric.currentThreadId;
                 return `
-                    <div class="thread-item-sidebar ${t.id === window.fabric.currentThreadId ? 'active' : ''}" data-thread-id="${t.id}">
+                    <div class="thread-item-sidebar ${isActive ? 'active' : ''}" data-thread-id="${t.id}">
                         <div class="thread-name">${escapeHtml(t.name || t.id.slice(0, 8))}</div>
                         <div class="thread-meta">
-                            <
+                            <span class="thread-message-count">${messageCount} msgs</span>
+                            <span class="thread-date">${new Date(t.updated).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.querySelectorAll('#thread-list-sidebar .thread-item-sidebar').forEach(el => {
+                el.onclick = async () => {
+                    const threadId = el.dataset.threadId;
+                    if (window.fabric && threadId !== window.fabric.currentThreadId) {
+                        await window.fabric.switchThread(threadId);
+                        window.refreshSidebarThreadList();
+                        if (window.loadThreadMessages) window.loadThreadMessages(threadId);
+                        if (window.updateChainDisplay) window.updateChainDisplay();
+                        console.log(`🔄 Switched to thread: ${threadId.slice(0, 8)}`);
+                    }
+                };
+            });
+            
+        } catch (e) {
+            console.error('Failed to load threads:', e);
+            threadListEl.innerHTML = '<div class="thread-placeholder">⟊ Error loading threads ⟊</div>';
+        }
+    };
+    
+    window.loadThreadMessages = async function(threadId) {
+        if (!window.fabric || !window.memory) return;
+        
+        try {
+            const memories = await window.fabric.vault.getMemoriesByThread(threadId);
+            
+            // Clear current memory
+            window.memory.clearWorking();
+            window.memory.active = [];
+            
+            // Load memories into memory.active
+            for (const mem of memories) {
+                window.memory.active.push({
+                    id: mem.id,
+                    role: mem.role,
+                    content: mem.content,
+                    model: mem.model,
+                    timestamp: mem.timestamp
+                });
+            }
+            
+            // Update displays
+            if (window.UIRenderer) {
+                window.UIRenderer.renderMessages();
+                window.UIRenderer.updateMemoryPanels();
+            }
+            if (window.updateRightPanelMemoryLists) window.updateRightPanelMemoryLists();
+            if (window.updateChainDisplay) window.updateChainDisplay();
+            
+            console.log(`📜 Loaded ${memories.length} messages for thread ${threadId.slice(0, 8)}`);
+            
+        } catch (e) {
+            console.error('Failed to load thread messages:', e);
+        }
+    };
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wireThreadsSidebar);
+    } else {
+        wireThreadsSidebar();
+    }
+})();
+</script>
