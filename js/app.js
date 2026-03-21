@@ -1,3 +1,58 @@
+let fabric, sync, grokClient, deepseekClient, claudeClient;
+
+// After components loaded, initialize fabric and clients
+window.addEventListener('componentsLoaded', async () => {
+    // ... existing initialization ...
+
+    // Initialize fabric
+    fabric = new NoeticFabric();
+    await fabric.init();
+
+    sync = new MemorySync(fabric);
+
+    // Initialize model clients with API keys (retrieved from localStorage)
+    const xaiKey = localStorage.getItem('xai_api_key');
+    const dsKey = localStorage.getItem('deepseek_api_key');
+    const anthKey = localStorage.getItem('anthropic_api_key');
+
+    if (xaiKey) grokClient = new GrokClient(xaiKey, fabric);
+    if (dsKey) deepseekClient = new DeepSeekClient(dsKey, fabric);
+    if (anthKey) claudeClient = new ClaudeClient(anthKey, fabric);
+
+    // Load fabric panel UI
+    await loadComponent('fabric-panel-placeholder', 'components/fabric-panel.html');
+    attachFabricUI();
+
+    // Override transmit function to use clients if available
+    window.transmit = async function() {
+        const model = modelSelector.value;
+        const message = msgInput.value.trim();
+        if (!message) return;
+
+        let reply = '';
+        try {
+            if (model === 'grok-4-1-fast-reasoning' && grokClient) {
+                reply = await grokClient.sendMessage(message);
+            } else if (model === 'deepseek-chat' && deepseekClient) {
+                reply = await deepseekClient.sendMessage(message);
+            } else if (model === 'claude-3-opus' && claudeClient) {
+                reply = await claudeClient.sendMessage(message);
+            } else {
+                // fallback to old API handlers
+                // ... existing transmit code ...
+                return;
+            }
+            // render reply
+            const assistantMsg = fabric.modelContexts[model.split('-')[0]]?.slice(-1)[0];
+            UIRenderer.renderMessages(); // needs to read from fabric
+        } catch(e) {
+            console.error(e);
+            memory.addWorking(`⚠️ Error: ${e.message}`, 'system');
+            UIRenderer.renderMessages();
+        }
+    };
+});
+
 // app.js - Main application logic
 let memory;
 let xaiApiKey = localStorage.getItem('xai_api_key') || '';
