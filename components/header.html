@@ -1,10 +1,84 @@
-<div class="header">
-    <div style="display: flex; align-items: center; gap: 16px;">
-        <span class="logo">AURELIAN // MEMORY CORE</span>
-        <button id="genesis-btn" class="genesis-btn" title="Open Genesis Panel">🌀 GENESIS</button>
+<div class="app-header">
+    <div class="logo">
+        <span class="logo-glyph">⟊◈◉◊⧈⟊</span>
+        <span class="logo-text">LILAREYON</span>
+        <span class="logo-sub">NOETIC FABRIC</span>
     </div>
-    <div class="chain-info">
-        <span class="chain-badge" id="currentChain">00000000</span>
-        <span>ACTIVE: <span id="chainCount">0</span></span>
+    <div class="header-status">
+        <div class="status-dot" id="fabric-status"></div>
+        <span class="status-text">distributed memory active</span>
     </div>
 </div>
+
+<style>
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, rgba(1, 4, 14, 0.98) 0%, rgba(20, 10, 40, 0.98) 100%);
+    border-bottom: 1px solid rgba(108, 92, 231, 0.4);
+    font-family: 'Courier New', monospace;
+}
+
+.logo {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.logo-glyph {
+    font-size: 20px;
+    color: #a88eff;
+    letter-spacing: 4px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #a88eff, #6c5ce7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.logo-sub {
+    font-size: 9px;
+    color: rgba(168, 142, 255, 0.6);
+    letter-spacing: 2px;
+    border-left: 1px solid rgba(108, 92, 231, 0.3);
+    padding-left: 12px;
+}
+
+.header-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(108, 92, 231, 0.3);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #48bb78;
+    box-shadow: 0 0 8px #48bb78;
+    animation: pulse 2s infinite;
+}
+
+.status-text {
+    font-size: 9px;
+    color: #b8aaff;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.9); }
+}
+</style>
