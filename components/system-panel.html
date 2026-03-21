@@ -19,6 +19,7 @@
             </div>
             <div class="api-status">
                 <span id="xaiStatus" class="status-badge"></span>
+                <span class="status-text">API key required for Grok</span>
             </div>
         </div>
         
@@ -30,6 +31,7 @@
             </div>
             <div class="api-status">
                 <span id="deepseekStatus" class="status-badge"></span>
+                <span class="status-text">API key required for DeepSeek</span>
             </div>
         </div>
         
@@ -41,6 +43,7 @@
             </div>
             <div class="api-status">
                 <span id="claudeStatus" class="status-badge"></span>
+                <span class="status-text">API key required for Claude</span>
             </div>
         </div>
     </div>
@@ -62,7 +65,7 @@
         </div>
         
         <div class="model-section">
-            <label>CLAUDESystem</label>
+            <label>CLAUDE SYSTEM</label>
             <textarea id="claude-system" rows="4" placeholder="System prompt for Claude..."></textarea>
         </div>
         
@@ -128,6 +131,11 @@
     transform: translateX(0);
 }
 
+.system-panel.hidden {
+    transform: translateX(100%);
+    display: block !important;
+}
+
 .system-header {
     display: flex;
     justify-content: space-between;
@@ -152,12 +160,18 @@
     color: #ff6b6b;
     font-size: 20px;
     cursor: pointer;
+    padding: 0 8px;
+}
+
+.close-btn:hover {
+    color: #ff8c8c;
 }
 
 .system-tabs {
     display: flex;
     border-bottom: 1px solid rgba(108, 92, 231, 0.2);
     padding: 0 16px;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .sys-tab {
@@ -171,6 +185,10 @@
     transition: all 0.2s;
 }
 
+.sys-tab:hover {
+    color: #d4c4ff;
+}
+
 .sys-tab.active {
     color: #a88eff;
     border-bottom: 2px solid #6c5ce7;
@@ -178,6 +196,10 @@
 
 .sys-content {
     padding: 20px;
+}
+
+.sys-content.hidden {
+    display: none;
 }
 
 .api-section, .model-section, .override-section {
@@ -219,6 +241,34 @@
     font-family: monospace;
     cursor: pointer;
     border-radius: 16px;
+    transition: all 0.2s;
+}
+
+.set-key-btn:hover, .small-btn:hover {
+    background: #6c5ce7;
+    color: white;
+}
+
+.api-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 8px;
+    color: #8a8a9e;
+}
+
+.status-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #666;
+}
+
+.status-badge.active {
+    background: #48bb78;
+    box-shadow: 0 0 6px #48bb78;
 }
 
 textarea {
@@ -231,6 +281,12 @@ textarea {
     font-family: monospace;
     font-size: 10px;
     resize: vertical;
+    box-sizing: border-box;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #6c5ce7;
 }
 
 .override-controls {
@@ -238,6 +294,7 @@ textarea {
     gap: 10px;
     align-items: center;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .override-status {
@@ -256,6 +313,12 @@ textarea {
     font-size: 10px;
     cursor: pointer;
     margin-top: 10px;
+    transition: all 0.2s;
+}
+
+.apply-all-btn:hover {
+    background: #7c6ef7;
+    transform: translateY(-1px);
 }
 
 .memory-stats {
@@ -297,6 +360,7 @@ textarea {
     font-family: monospace;
     font-size: 10px;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .danger-btn {
@@ -305,22 +369,75 @@ textarea {
     border: 1px solid #ff6b6b;
 }
 
+.danger-btn:hover {
+    background: rgba(255, 107, 107, 0.4);
+}
+
 .warning-btn {
     background: rgba(255, 170, 102, 0.2);
     color: #ffaa66;
     border: 1px solid #ffaa66;
 }
 
-.status-badge {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #666;
-}
-
-.status-badge.active {
-    background: #48bb78;
-    box-shadow: 0 0 6px #48bb78;
+.warning-btn:hover {
+    background: rgba(255, 170, 102, 0.4);
 }
 </style>
+
+<script>
+(function() {
+    console.log('🔧 System panel script initializing...');
+    
+    function wireSystemPanel() {
+        console.log('🔧 Wiring system panel...');
+        
+        const systemPanel = document.getElementById('system-panel');
+        const closeBtn = document.getElementById('close-system');
+        
+        if (closeBtn && systemPanel) {
+            closeBtn.onclick = function(e) {
+                e.preventDefault();
+                console.log('❌ Closing system panel');
+                systemPanel.classList.add('hidden');
+            };
+            console.log('✓ System close button wired');
+        }
+        
+        // Wire tabs
+        const tabs = document.querySelectorAll('.sys-tab');
+        console.log(`Found ${tabs.length} system tabs`);
+        
+        tabs.forEach(tab => {
+            tab.onclick = function(e) {
+                e.preventDefault();
+                const tabId = this.dataset.tab;
+                console.log(`Switching to tab: ${tabId}`);
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.sys-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                const targetContent = document.getElementById(`sys-${tabId}`);
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                    console.log(`✓ Showing sys-${tabId}`);
+                } else {
+                    console.warn(`⚠️ Content not found: sys-${tabId}`);
+                }
+            };
+        });
+        
+        console.log('✅ System panel wired');
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wireSystemPanel);
+    } else {
+        wireSystemPanel();
+    }
+})();
+</script>
