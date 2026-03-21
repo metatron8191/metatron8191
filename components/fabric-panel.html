@@ -1,0 +1,25 @@
+<!-- components/fabric-panel.html -->
+<div id="fabric-panel" class="fabric-panel hidden">
+    <div class="fabric-header">
+        <h2>🧠 NOETIC FABRIC</h2>
+        <button id="fabric-close" class="fabric-close">✕</button>
+    </div>
+    <div class="fabric-content">
+        <div class="fabric-section">
+            <h3>📜 THREADS</h3>
+            <div id="thread-list"></div>
+            <button id="new-thread-btn">+ New Thread</button>
+        </div>
+        <div class="fabric-section">
+            <h3>🔗 SHARED MEMORY</h3>
+            <div id="shared-memories"></div>
+        </div>
+        <div class="fabric-section">
+            <h3>⚙️ SYNC STATUS</h3>
+            <div id="sync-status">Active</div>
+            <button id="export-fabric-btn">📤 Export</button>
+            <button id="import-fabric-btn">📥 Import</button>
+            <input type="file" id="import-file" style="display:none" accept=".json">
+        </div>
+    </div>
+</div>
