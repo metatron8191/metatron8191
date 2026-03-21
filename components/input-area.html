@@ -1,8 +1,189 @@
-<div class="input-area">
-    <div class="input-wrapper">
-        <textarea id="message-input" class="message-input" placeholder="Transmit to Aurelian..." rows="1"></textarea>
+<div class="input-container">
+    <div class="input-toolbar">
+        <div class="input-tools">
+            <button id="webSearchBtn" class="input-tool" title="Web Search">🌐</button>
+            <button id="xSearchBtn" class="input-tool" title="X Search">𝕏</button>
+            <button id="imageGenBtn" class="input-tool" title="Image Generation">🎨</button>
+            <button id="streamToggle" class="input-tool stream-btn" title="Streaming">⚡ STREAM: OFF</button>
+            <label class="file-label" title="Attach File">
+                📎
+                <input type="file" id="file-input" multiple style="display: none;">
+            </label>
+        </div>
+        <div id="tool-status" class="tool-status"></div>
+    </div>
+    
+    <div class="input-row">
+        <textarea id="message-input" rows="2" placeholder="Type your message... (Enter to send, Shift+Enter for new line)"></textarea>
         <button id="transmit-button" class="transmit-btn">↵</button>
     </div>
+    
     <div id="file-names" class="file-names"></div>
-    <input type="file" id="file-input" multiple style="display: none;">
+    
+    <div class="response-style-selector">
+        <select id="response-style">
+            <option value="precise">🎯 PRECISE</option>
+            <option value="balanced" selected>⚖️ BALANCED</option>
+            <option value="creative">🎨 CREATIVE</option>
+            <option value="custom">⚙️ CUSTOM</option>
+        </select>
+        <button id="getDeepSeekBtn" class="deepseek-perspective">🔮 DEEPSEEK PERSPECTIVE</button>
+    </div>
 </div>
+
+<style>
+.input-container {
+    padding: 16px;
+    background: rgba(1, 4, 14, 0.95);
+    border-top: 1px solid rgba(108, 92, 231, 0.3);
+}
+
+.input-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.input-tools {
+    display: flex;
+    gap: 8px;
+}
+
+.input-tool {
+    background: rgba(30, 20, 50, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    color: #b8aaff;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+
+.input-tool.active {
+    background: #6c5ce7;
+    color: white;
+    border-color: #a88eff;
+}
+
+.input-tool:hover {
+    background: #6c5ce7;
+    transform: translateY(-1px);
+}
+
+.stream-btn {
+    font-size: 10px;
+}
+
+.file-label {
+    background: rgba(30, 20, 50, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    color: #b8aaff;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tool-status {
+    font-size: 9px;
+    color: #a88eff;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 10px;
+    border-radius: 16px;
+}
+
+.input-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+#message-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    color: #e2e2ff;
+    padding: 12px 16px;
+    border-radius: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    resize: none;
+    transition: all 0.2s;
+}
+
+#message-input:focus {
+    outline: none;
+    border-color: #6c5ce7;
+    box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+}
+
+.transmit-btn {
+    background: #6c5ce7;
+    border: none;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.transmit-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 16px rgba(108, 92, 231, 0.5);
+}
+
+.transmit-btn:disabled {
+    opacity: 0.5;
+    transform: none;
+}
+
+.file-names {
+    font-size: 9px;
+    color: #a88eff;
+    margin-top: 8px;
+    padding-left: 8px;
+}
+
+.response-style-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 12px;
+}
+
+#response-style {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    color: #b8aaff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.deepseek-perspective {
+    background: rgba(108, 92, 231, 0.2);
+    border: 1px solid #6c5ce7;
+    color: #a88eff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-family: monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.deepseek-perspective:hover {
+    background: #6c5ce7;
+    color: white;
+}
+</style>
